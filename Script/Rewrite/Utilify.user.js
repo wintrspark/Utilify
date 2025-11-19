@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         UtilifyV2
 // @namespace    add me on discord @ simonvhs if you have something useful to add gg
-// @version      2.0.2
-// @description  I keep going back on saying I'm done but hecc mannn, kogama is charming 
+// @version      2.0.4
+// @description  Slowly rewriting this addon because I want to feel useful.
 // @author       S
 // @match        *://www.kogama.com/*
 // @icon         https://avatars.githubusercontent.com/u/143356794?v=4
@@ -14,7 +14,9 @@
 // @connect      fonts.googleapis.com
 // @connect      kogama.com
 // @connect      kogama.com.br
+// @run-at       document-start
 // ==/UserScript==
+
 
 (async function() { // bg + filters
   "use strict";
@@ -1077,1536 +1079,895 @@ const createSnowEffect = (e) => {
   });
 })();
 
-
-
-
-
-(function() {
-    'use strict';
-    GM_addStyle(`
-        .custom-settings-container {
-            margin-right: 8px;
-            display: flex;
-            align-items: center;
-            position: relative;
-            z-index: 1001 !important;
-        }
-        .custom-settings-button {
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
-            z-index: 1001 !important;
-            position: relative;
-        }
-        .custom-settings-button:hover {
-            transform: rotate(30deg) !important;
-            filter: drop-shadow(0 0 4px rgba(139, 195, 74, 0.5));
-        }
-        .custom-gear-icon {
-            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .custom-settings-button:hover .custom-gear-icon {
-            transform: rotate(330deg);
-        }
-
-        .settings-panel {
-            position: fixed;
-            top: 100px;
-            left: 100px;
-            width: 500px;
-            height: 400px;
-            background: #2b2a2a;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            z-index: 9999;
-            display: none;
-            overflow: hidden;
-            border: 1px solid #3a3a3a;
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            color: #e0e0e0;
-            transition: all 0.3s ease;
-        }
-        .settings-panel.visible {
-            display: flex;
-        }
-        .settings-panel-header {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 40px;
-            background: linear-gradient(90deg, #3a3a3a, #2b2a2a);
-            display: flex;
-            align-items: center;
-            padding: 0 15px;
-            cursor: move;
-            border-bottom: 1px solid #1e1e1e;
-            user-select: none;
-            z-index: 2;
-        }
-        .settings-panel-title {
-            flex-grow: 1;
-            font-weight: 600;
-            color: #8bc34a;
-            text-shadow: 0 0 5px rgba(139, 195, 74, 0.3);
-        }
-        .settings-panel-close {
-            cursor: pointer;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-            transition: background 0.2s;
-        }
-        .settings-panel-close:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-        .settings-panel-body {
-            display: flex;
-            width: 100%;
-            height: 100%;
-            padding-top: 40px;
-        }
-        .settings-tabs {
-            width: 120px;
-            background: #252525;
-            border-right: 1px solid #1e1e1e;
-            padding: 10px 0;
-        }
-        .settings-tab {
-            padding: 12px 15px;
-            cursor: pointer;
-            transition: all 0.2s;
-            border-left: 3px solid transparent;
-            font-size: 13px;
-        }
-        .settings-tab:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-        .settings-tab.active {
-            background: rgba(139, 195, 74, 0.1);
-            border-left: 3px solid #8bc34a;
-            color: #8bc34a;
-        }
-        .settings-content {
-            flex-grow: 1;
-            padding: 7px;
-            overflow-y: auto;
-        }
-        .settings-tab-content {
-            display: none;
-        }
-        .settings-tab-content.active {
-            display: block;
-        }
-
-        /* Specific tab styles */
-        .gradient-controls {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .color-picker-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .color-preview {
-            width: 30px;
-            height: 30px;
-            border-radius: 4px;
-            border: 1px solid #444;
-            cursor: pointer;
-        }
-        .slider-container {
-            margin: 15px 0;
-        }
-        .slider-label {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-        }
-        .slider {
-            width: 100%;
-            height: 6px;
-            -webkit-appearance: none;
-            background: #444;
-            border-radius: 3px;
-            outline: none;
-        }
-        .slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: #8bc34a;
-            cursor: pointer;
-        }
-
-         .privacy-description {
-            font-size: 12px;
-            color: #aaa;
-            margin-top: 16px;
-            margin-bottom: 15px;
-        }
-        .privacy-option {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        .privacy-toggle {
-            position: relative;
-            display: inline-block;
-            width: 40px;
-            height: 20px;
-            margin-right: 10px;
-        }
-        .privacy-toggle input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        .privacy-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #444;
-            transition: .4s;
-            border-radius: 20px;
-        }
-        .privacy-slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 2px;
-            bottom: 2px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        input:checked + .privacy-slider {
-            background-color: #8bc34a;
-        }
-        input:checked + .privacy-slider:before {
-            transform: translateX(20px);
-        }
-
-        .style-option {
-            margin-bottom: 15px;
-        }
-        .style-select {
-            width: 100%;
-            padding: 8px;
-            background: #333;
-            border: 1px solid #444;
-            border-radius: 4px;
-            color: #e0e0e0;
-            margin-top: 5px;
-        }
-
-        .font-option {
-            margin-bottom: 15px;
-        }
-        .font-preview {
-            padding: 10px;
-            border: 1px solid #444;
-            border-radius: 4px;
-            margin-top: 10px;
-            background: #333;
-        }
-        .online-font-input {
-            width: 100%;
-            padding: 8px;
-            background: #333;
-            border: 1px solid #444;
-            border-radius: 4px;
-            color: #e0e0e0;
-            margin-top: 5px;
-            font-family: inherit;
-            transition: border-color 0.3s;
-        }
-        .online-font-input.valid {
-            border-color: #8bc34a;
-        }
-        .online-font-description {
-            font-size: 12px;
-            color: #aaa;
-            margin-top: 5px;
-        }
-        .font-disclaimer {
-            font-size: 12px;
-            color: #ff9800;
-            margin-top: 15px;
-            padding: 8px;
-            background: rgba(255, 152, 0, 0.1);
-            border-radius: 4px;
-        }
-        .color-hex-input {
-            padding: 5px;
-            background: #333;
-            border: 1px solid #444;
-            border-radius: 4px;
-            color: #e0e0e0;
-            font-family: inherit;
-        }
-        .gradient-text-input {
-            width: 100%;
-            padding: 8px;
-            background: #333;
-            border: 1px solid #444;
-            border-radius: 4px;
-            color: #e0e0e0;
-            margin-top: 10px;
-            font-family: inherit;
-        }
-        .gradient-buttons-container {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        .gradient-action-btn {
-            padding: 8px 12px;
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: white;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: inherit;
-        }
-        .gradient-action-btn:hover {
-            background: rgba(255,255,255,0.2);
-        }
-                .style-option {
-            margin-bottom: 15px;
-        }
-        .style-select {
-            width: 100%;
-            padding: 8px;
-            background: #333;
-            border: 1px solid #444;
-            border-radius: 4px;
-            color: #e0e0e0;
-            margin-top: 5px;
-        }
-
-        /* New styles for our enhanced options */
-        .glass-panel-controls {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-top: 15px;
-        }
-        .control-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .slider-with-input {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            width: 100%;
-        }
-        .slider-with-input input[type="range"] {
-            flex-grow: 1;
-        }
-        .slider-with-input input[type="number"] {
-            width: 60px;
-            padding: 5px;
-            background: #333;
-            border: 1px solid #444;
-            border-radius: 4px;
-            color: #e0e0e0;
-        }
-        .css-input-area {
-            width: 100%;
-            height: 150px;
-            padding: 8px;
-            background: #333;
-            border: 1px solid #444;
-            border-radius: 4px;
-            color: #e0e0e0;
-            resize: vertical;
-            font-family: monospace;
-            margin-top: 5px;
-        }
-        .css-input-area.valid {
-            border-color: #8bc34a;
-        }
-        .url-input-area {
-            width: 100%;
-            height: 80px;
-            padding: 8px;
-            background: #333;
-            border: 1px solid #444;
-            border-radius: 4px;
-            color: #e0e0e0;
-            resize: vertical;
-            font-family: monospace;
-            margin-top: 5px;
-        }
-        .url-input-area.valid {
-            border-color: #8bc34a;
-        }
-    `);
-
-    function createSettingsPanel() {
-        const panel = document.createElement('div');
-        panel.className = 'settings-panel';
-        panel.innerHTML = `
-<div class="settings-panel-header">
-    <div class="settings-panel-title">UtilifyV2 Config Menu</div>
-    <div class="settings-panel-close">✕</div>
-</div>
-<div class="settings-panel-body">
-    <div class="settings-tabs">
-        <div class="settings-tab active" data-tab="gradient">Gradient</div>
-        <div class="settings-tab" data-tab="privacy">Privacy</div>
-        <div class="settings-tab" data-tab="styles">Styles</div>
-        <div class="settings-tab" data-tab="fonts">Fonts</div>
-    </div>
-    <div class="settings-content">
-        <div class="settings-tab-content active" id="gradient-tab">
-            <h3>Gradient Customization</h3>
-            <div class="gradient-controls">
-                <div class="slider-container">
-                    <div class="slider-label">
-                        <span>Gradient Angle</span>
-                        <span id="angle-value">45°</span>
-                    </div>
-                    <input type="range" min="0" max="360" value="45" class="slider" id="gradient-angle">
-                </div>
-                <div class="color-picker-row">
-                    <span>Start Color:</span>
-                    <div class="color-preview" id="start-color" style="background: #3a3a3a;"></div>
-                    <input type="text" class="color-hex-input" placeholder="#HEX">
-                    <input type="color" id="start-color-picker" value="#3a3a3a" style="display: none;">
-                </div>
-                <div class="color-picker-row">
-                    <span>End Color:</span>
-                    <div class="color-preview" id="end-color" style="background: #2b2a2a;"></div>
-                    <input type="text" class="color-hex-input" placeholder="#HEX">
-                    <input type="color" id="end-color-picker" value="#2b2a2a" style="display: none;">
-                </div>
-                <input type="text" class="gradient-text-input" id="custom-gradient-input" placeholder="linear-gradient(45deg, #3a3a3a, #2b2a2a)">
-                <div class="gradient-buttons-container">
-                    <button class="gradient-action-btn">Copy Gradient</button>
-                    <button class="gradient-action-btn">Clear Gradient</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="settings-tab-content" id="privacy-tab">
-            <h3>Privacy Settings</h3>
-            <div class="privacy-option">
-                <label class="privacy-toggle">
-                    <input type="checkbox" id="disable-friendslist">
-                    <span class="privacy-slider"></span>
-                </label>
-                <span>Disable Friendslist</span>
-            </div>
-            <div class="privacy-option">
-                <label class="privacy-toggle">
-                    <input type="checkbox" id="blur-sensitive">
-                    <span class="privacy-slider"></span>
-                </label>
-                <span>Blur sensitive content</span>
-                <div class="privacy-description">This feature is currently broken.</div>
-            </div>
-            <div class="privacy-option">
-                <label class="privacy-toggle">
-                    <input type="checkbox" id="blur-comments">
-                    <span class="privacy-slider"></span>
-                </label>
-                <span>Blur comments</span>
-            </div>
-            <div class="privacy-option">
-                <label class="privacy-toggle">
-                    <input type="checkbox" id="disable-infobar">
-                    <span class="privacy-slider"></span>
-                </label>
-                <span>Disable WebGL ProfileNav</span>
-            </div>
-        </div>
-
-        <div class="settings-tab-content" id="styles-tab">
-            <h3>Style Customization</h3>
-            <div class="style-option">
-                <label class="privacy-toggle">
-                    <input type="checkbox" id="glass-panels-toggle" checked>
-                    <span class="privacy-slider"></span>
-                </label>
-                <span>Glass Panels</span>
-                <div class="glass-panel-controls">
-                    <div class="control-row">
-                        <span>Border Radius:</span>
-                        <input type="number" id="glass-radius" min="0" max="50" value="8">
-                    </div>
-                    <div class="control-row">
-                        <span>Hue:</span>
-                        <div class="slider-with-input">
-                            <input type="range" id="glass-hue" min="0" max="360" value="270">
-                            <span id="glass-hue-value">270</span>
-                        </div>
-                    </div>
-                    <div class="control-row">
-                        <span>Transparency:</span>
-                        <div class="slider-with-input">
-                            <input type="range" id="glass-alpha" min="1" max="50" value="16">
-                            <span id="glass-alpha-value">16</span>%
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="style-option">
-                <label class="privacy-toggle">
-                    <input type="checkbox" id="invisible-avatars-toggle">
-                    <span class="privacy-slider"></span>
-                </label>
-                <span>Invisible Avatar Backgrounds</span>
-            </div>
-            <div class="style-option">
-                <label>Online Styles (URLs)</label>
-                <textarea class="url-input-area" id="online-styles-input" placeholder="Enter one CSS URL per line (e.g., https://example.com/style.css)"></textarea>
-            </div>
-            <div class="style-option">
-                <label>Custom CSS</label>
-                <textarea class="css-input-area" id="custom-css-input" placeholder="Enter your custom CSS here"></textarea>
-            </div>
-        </div>
-
-        <div class="settings-tab-content" id="fonts-tab">
-            <h3>Font Customization</h3>
-            <div class="font-option">
-                <label>Main Font</label>
-                <select class="style-select" id="main-font">
-                    <option value="default">Default (Segoe UI)</option>
-                    <option value="roboto">Roboto</option>
-                    <option value="open-sans">Open Sans</option>
-                    <option value="montserrat">Montserrat</option>
-                    <option value="poppins">Poppins</option>
-                    <option value="comfortaa">Comfortaa</option>
-                    <option value="online">Online Font</option>
-                </select>
-                <div class="font-preview" style="font-family: 'Segoe UI'">
-                    The quick brown fox jumps over the lazy dog
-                </div>
-            </div>
-            <div class="font-option">
-                <label>Online Font URL</label>
-                <input type="text" class="online-font-input" id="online-font-url" placeholder="https://fonts.googleapis.com/css2?family=FontName">
-                <div class="online-font-description">
-                    Supports Google Fonts (copy the CSS URL) or direct .ttf/.woff URLs.
-                    Only one online font can be active at a time.
-                </div>
-            </div>
-            <div class="font-option">
-                <label>Font Size</label>
-                <select class="style-select" id="font-size">
-                    <option value="default">Default</option>
-                    <option value="small">Small</option>
-                    <option value="medium">Medium</option>
-                    <option value="large">Large</option>
-                </select>
-            </div>
-            <div class="font-disclaimer">
-                Note: Only one online font can be active at a time. The input border will turn green when your online font is successfully loaded.
-            </div>
-        </div>
-    </div>
-</div>
-
-        `;
-
-        document.body.appendChild(panel);
-        return panel;
-    }
-
-    function makeDraggable(panel) {
-        const header = panel.querySelector('.settings-panel-header');
-        let isDragging = false;
-        let offsetX, offsetY;
-
-        header.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            offsetX = e.clientX - panel.getBoundingClientRect().left;
-            offsetY = e.clientY - panel.getBoundingClientRect().top;
-            panel.style.cursor = 'grabbing';
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-
-            const x = e.clientX - offsetX;
-            const y = e.clientY - offsetY;
-            const maxX = window.innerWidth - panel.offsetWidth;
-            const maxY = window.innerHeight - panel.offsetHeight;
-
-            panel.style.left = `${Math.min(Math.max(0, x), maxX)}px`;
-            panel.style.top = `${Math.min(Math.max(0, y), maxY)}px`;
-        });
-
-        document.addEventListener('mouseup', () => {
-            isDragging = false;
-            panel.style.cursor = '';
-        });
-    }
-
-    function setupTabs(panel) {
-        const tabs = panel.querySelectorAll('.settings-tab');
-        const contents = panel.querySelectorAll('.settings-tab-content');
-
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                tabs.forEach(t => t.classList.remove('active'));
-                contents.forEach(c => c.classList.remove('active'));
-                tab.classList.add('active');
-                const tabId = tab.getAttribute('data-tab');
-                document.getElementById(`${tabId}-tab`).classList.add('active');
-            });
-        });
-    }
-    function setupGradientTab(panel) {
-        const angleSlider = panel.querySelector('#gradient-angle');
-        const angleValue = panel.querySelector('#angle-value');
-        const startColorPreview = panel.querySelector('#start-color');
-        const startColorPicker = panel.querySelector('#start-color-picker');
-        const endColorPreview = panel.querySelector('#end-color');
-        const endColorPicker = panel.querySelector('#end-color-picker');
-        const startColorHex = panel.querySelectorAll('.color-hex-input')[0];
-        const endColorHex = panel.querySelectorAll('.color-hex-input')[1];
-        const customGradientInput = panel.querySelector('#custom-gradient-input');
-        const copyButton = panel.querySelectorAll('.gradient-action-btn')[0];
-        const clearButton = panel.querySelectorAll('.gradient-action-btn')[1];
-        function parseGradient(gradient) {
-            if (!gradient) return null;
-
-            const match = gradient.match(/linear-gradient\((\d+)deg,\s*(#[0-9a-f]+|rgba?\([^)]+\)),\s*(#[0-9a-f]+|rgba?\([^)]+\))/i);
-            if (match) {
-                return {
-                    angle: match[1],
-                    color1: match[2],
-                    color2: match[3]
-                };
-            }
-            return null;
-        }
-        function isValidHex(hex) {
-            return /^#([0-9A-F]{3}){1,2}$/i.test(hex);
-        }
-        function updateColorFromHex(input, picker, preview) {
-            const hex = input.value.trim();
-            if (hex && isValidHex(hex)) {
-                picker.value = hex;
-                preview.style.background = hex;
-                updateGradient();
-            }
-        }
-        function loadGradient() {
-            const savedConfig = GM_getValue('UConfig', {});
-            const savedGradient = savedConfig.gradient || 'linear-gradient(45deg, #3a3a3a, #2b2a2a)';
-            document.body.style.background = savedGradient;
-            document.body.style.backgroundAttachment = 'fixed';
-            const parsed = parseGradient(savedGradient);
-            if (parsed) {
-                angleSlider.value = parsed.angle;
-                angleValue.textContent = `${parsed.angle}°`;
-                startColorPicker.value = parsed.color1;
-                startColorPreview.style.background = parsed.color1;
-                startColorHex.value = parsed.color1;
-                endColorPicker.value = parsed.color2;
-                endColorPreview.style.background = parsed.color2;
-                endColorHex.value = parsed.color2;
-                customGradientInput.value = savedGradient;
-            }
-        }
-        function updateGradient() {
-            const angle = angleSlider.value;
-            const color1 = startColorPicker.value;
-            const color2 = endColorPicker.value;
-            const gradient = `linear-gradient(${angle}deg, ${color1}, ${color2})`;
-            startColorPreview.style.background = color1;
-            startColorHex.value = color1;
-            endColorPreview.style.background = color2;
-            endColorHex.value = color2;
-            angleValue.textContent = `${angle}°`;
-            customGradientInput.value = gradient;
-            document.body.style.background = gradient;
-            document.body.style.backgroundAttachment = 'fixed';
-            const currentConfig = GM_getValue('UConfig', {});
-            currentConfig.gradient = gradient;
-            GM_setValue('UConfig', currentConfig);
-        }
-
-        function handleCustomGradient(e) {
-            const value = e.target.value.trim();
-            if (value.includes('linear-gradient')) {
-                document.body.style.background = value;
-                document.body.style.backgroundAttachment = 'fixed';
-                const parsed = parseGradient(value);
-                if (parsed) {
-                    angleSlider.value = parsed.angle;
-                    angleValue.textContent = `${parsed.angle}°`;
-                    startColorPicker.value = parsed.color1;
-                    startColorPreview.style.background = parsed.color1;
-                    startColorHex.value = parsed.color1;
-                    endColorPicker.value = parsed.color2;
-                    endColorPreview.style.background = parsed.color2;
-                    endColorHex.value = parsed.color2;
-                }
-                const currentConfig = GM_getValue('UConfig', {});
-                currentConfig.gradient = value;
-                GM_setValue('UConfig', currentConfig);
-            }
-        }
-        function clearGradient() {
-            document.body.style.background = '';
-            customGradientInput.value = '';
-            const currentConfig = GM_getValue('UConfig', {});
-            delete currentConfig.gradient;
-            GM_setValue('UConfig', currentConfig);
-        }
-
-        function copyGradient() {
-            const gradient = customGradientInput.value ||
-                             `linear-gradient(${angleSlider.value}deg, ${startColorPicker.value}, ${endColorPicker.value})`;
-
-            navigator.clipboard.writeText(gradient).then(() => {
-                const originalText = copyButton.textContent;
-                copyButton.textContent = 'Copied!';
-                setTimeout(() => {
-                    copyButton.textContent = originalText;
-                }, 2000);
-            }).catch(err => {
-                console.error('Failed to copy gradient: ', err);
-            });
-        }
-        angleSlider.addEventListener('input', updateGradient);
-        startColorPicker.addEventListener('input', updateGradient);
-        endColorPicker.addEventListener('input', updateGradient);
-        startColorPreview.addEventListener('click', () => startColorPicker.click());
-        endColorPreview.addEventListener('click', () => endColorPicker.click());
-        startColorHex.addEventListener('change', () => updateColorFromHex(startColorHex, startColorPicker, startColorPreview));
-        endColorHex.addEventListener('change', () => updateColorFromHex(endColorHex, endColorPicker, endColorPreview));
-        customGradientInput.addEventListener('input', handleCustomGradient);
-        copyButton.addEventListener('click', copyGradient);
-        clearButton.addEventListener('click', clearGradient);
-        loadGradient();
-    }
-
-
-    function setupFontTab(panel) {
-        const fontSelect = panel.querySelector('#main-font');
-        const fontPreview = panel.querySelector('.font-preview');
-        const onlineFontInput = panel.querySelector('#online-font-url');
-        let currentFontLink = null;
-        let currentFontStyle = null;
-
-        const fontMap = {
-            'default': "'Segoe UI', sans-serif",
-            'roboto': "'Roboto', sans-serif",
-            'open-sans': "'Open Sans', sans-serif",
-            'montserrat': "'Montserrat', sans-serif",
-            'poppins': "'Poppins', sans-serif",
-            'comfortaa': "'Comfortaa', sans-serif",
-            'online': "var(--custom-font), sans-serif"
-        };
-
-        function loadComfortaa() {
-            const link = document.createElement('link');
-            link.href = 'https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;700&display=swap';
-            link.rel = 'stylesheet';
-            document.head.appendChild(link);
-        }
-
-        function loadOnlineFont(url) {
-            if (currentFontLink) {
-                document.head.removeChild(currentFontLink);
-                currentFontLink = null;
-            }
-
-            if (!url) {
-                onlineFontInput.classList.remove('valid');
-                return;
-            }
-            try {
-                new URL(url);
-            } catch (e) {
-                onlineFontInput.classList.remove('valid');
-                return;
-            }
-
-            const link = document.createElement('link');
-            link.href = url;
-            link.rel = 'stylesheet';
-            document.head.appendChild(link);
-            currentFontLink = link;
-
-            let fontFamily = 'CustomFont';
-            if (url.includes('fonts.googleapis.com')) {
-                const match = url.match(/family=([^&:]+)/);
-                if (match) fontFamily = match[1].replace(/\+/g, ' ');
-            }
-
-            if (!currentFontStyle) {
-                currentFontStyle = document.createElement('style');
-                document.head.appendChild(currentFontStyle);
-            }
-            currentFontStyle.textContent = `:root { --custom-font: "${fontFamily}"; }`;
-
-            onlineFontInput.classList.add('valid');
-
-            const currentConfig = GM_getValue('UConfig', {});
-            currentConfig.onlineFont = url;
-            GM_setValue('UConfig', currentConfig);
-        }
-
-        function applyGlobalFont(fontValue) {
-            const oldStyle = document.getElementById('global-font-style');
-            if (oldStyle) oldStyle.remove();
-
-            const style = document.createElement('style');
-            style.id = 'global-font-style';
-            style.textContent = `* { font-family: ${fontValue} !important; }`;
-            document.head.appendChild(style);
-        }
-
-        fontSelect.addEventListener('change', (e) => {
-            const selectedFont = e.target.value;
-
-            if (selectedFont === 'online') {
-                const savedConfig = GM_getValue('UConfig', {});
-                const savedFont = savedConfig.onlineFont;
-                if (savedFont) {
-                    loadOnlineFont(savedFont);
-                    onlineFontInput.value = savedFont;
-                    applyGlobalFont(fontMap[selectedFont]);
-                    fontPreview.style.fontFamily = fontMap[selectedFont].replace('var(--custom-font), ', '').replace('sans-serif', '');
-                }
-            } else {
-                if (selectedFont === 'comfortaa') loadComfortaa();
-                applyGlobalFont(fontMap[selectedFont]);
-                fontPreview.style.fontFamily = fontMap[selectedFont];
-
-                const currentConfig = GM_getValue('UConfig', {});
-                currentConfig.fontFamily = selectedFont;
-                if (currentConfig.onlineFont) {
-                    delete currentConfig.onlineFont;
-                    onlineFontInput.value = '';
-                    onlineFontInput.classList.remove('valid');
-                }
-                GM_setValue('UConfig', currentConfig);
-            }
-        });
-
-        onlineFontInput.addEventListener('change', (e) => {
-            if (fontSelect.value === 'online') {
-                loadOnlineFont(e.target.value.trim());
-                if (e.target.value.trim()) {
-                    applyGlobalFont(fontMap.online);
-                    fontPreview.style.fontFamily = fontMap.online.replace('var(--custom-font), ', '').replace('sans-serif', '');
-                }
-            }
-        });
-
-        const savedConfig = GM_getValue('UConfig', {});
-        if (savedConfig.fontFamily) {
-            fontSelect.value = savedConfig.fontFamily;
-            if (savedConfig.fontFamily === 'comfortaa') loadComfortaa();
-            if (savedConfig.fontFamily === 'online' && savedConfig.onlineFont) {
-                onlineFontInput.value = savedConfig.onlineFont;
-                loadOnlineFont(savedConfig.onlineFont);
-                applyGlobalFont(fontMap.online);
-                fontPreview.style.fontFamily = fontMap.online.replace('var(--custom-font), ', '').replace('sans-serif', '');
-            } else {
-                applyGlobalFont(fontMap[savedConfig.fontFamily] || fontMap.default);
-                fontPreview.style.fontFamily = fontMap[savedConfig.fontFamily] || fontMap.default;
-            }
-        }
-    }
-
-    function setupPrivacyTab(panel) {
-        const disableFriendslist = panel.querySelector('#disable-friendslist');
-        const blurSensitive = panel.querySelector('#blur-sensitive');
-        const blurComments = panel.querySelector('#blur-comments');
-        const disableInfobar = panel.querySelector('#disable-infobar');
-        let privacyStyle = document.createElement('style');
-        privacyStyle.id = 'kogama-privacy-styles';
-        document.head.appendChild(privacyStyle);
-        function updatePrivacyStyles() {
-            let css = '';
-
-            if (disableFriendslist.checked) {
-                css += `._1Yhgq { display: none !important; transition: all 0.3s ease-in-out;}`;
-            }
-            if (blurSensitive.checked) {
-                css += `.css-k9ok3b { filter: blur(5px) !important;transition: filter 0.3s ease !important; }.css-k9ok3b:focus {filter: none !important; }`;
-            }
-            if (blurComments.checked) {
-                css += `._3Wsxf  {
-                    filter: blur(5px) !important;
-                    transition: all 0.7s ease !important;
-                }
-                ._3Wsxf:hover {
-                    filter: none !important;
-                }`;
-            }
-            if (disableInfobar.checked) {
-                css += `._3i_24 { display: none !important; }`;
-            }
-
-            privacyStyle.textContent = css;
-        }
-        function loadPrivacySettings() {
-            const savedConfig = GM_getValue('UConfig', {});
-
-            if (savedConfig.disableFriendslist) disableFriendslist.checked = true;
-            if (savedConfig.blurSensitive) blurSensitive.checked = true;
-            if (savedConfig.blurComments) blurComments.checked = true;
-            if (savedConfig.disableInfobar) disableInfobar.checked = true;
-
-            updatePrivacyStyles();
-        }
-        function handlePrivacyToggle() {
-            const currentConfig = GM_getValue('UConfig', {});
-
-            currentConfig.disableFriendslist = disableFriendslist.checked;
-            currentConfig.blurSensitive = blurSensitive.checked;
-            currentConfig.blurComments = blurComments.checked;
-            currentConfig.disableInfobar = disableInfobar.checked;
-
-            GM_setValue('UConfig', currentConfig);
-            updatePrivacyStyles();
-        }
-        disableFriendslist.addEventListener('change', handlePrivacyToggle);
-        blurSensitive.addEventListener('change', handlePrivacyToggle);
-        blurComments.addEventListener('change', handlePrivacyToggle);
-        disableInfobar.addEventListener('change', handlePrivacyToggle);
-        loadPrivacySettings();
-    }
-        function setupStylesTab(panel) {
-        const glassPanelsToggle = panel.querySelector('#glass-panels-toggle');
-        const glassRadiusInput = panel.querySelector('#glass-radius');
-        const glassHueSlider = panel.querySelector('#glass-hue');
-        const glassHueValue = panel.querySelector('#glass-hue-value');
-        const glassAlphaSlider = panel.querySelector('#glass-alpha');
-        const glassAlphaValue = panel.querySelector('#glass-alpha-value');
-        const invisibleAvatarsToggle = panel.querySelector('#invisible-avatars-toggle');
-        const onlineStylesInput = panel.querySelector('#online-styles-input');
-        const customCSSInput = panel.querySelector('#custom-css-input');
-
-
-        let dynamicStyle = document.createElement('style');
-        dynamicStyle.id = 'kogama-enhanced-styles';
-        document.head.appendChild(dynamicStyle);
-
-        function updateGlassPanelStyles() {
-            const enabled = glassPanelsToggle.checked;
-            const radius = glassRadiusInput.value;
-            const hue = glassHueSlider.value;
-            const alpha = glassAlphaSlider.value / 100;
-
-            if (!enabled) {
-                dynamicStyle.textContent = dynamicStyle.textContent.replace(/\/\* GLASS PANELS START \*\/[\s\S]*?\/\* GLASS PANELS END \*\//g, '');
-                return;
-            }
-
-            const glassCSS = `/* GLASS PANELS START */
-            ._1q4mD ._1sUGu ._1u05O { background-color: transparent !important; }
-                .css-1udp1s3, .css-zslu1c, .css-1rbdj9p {
-                    background-color: hsla(${hue}, 68%, 43%, ${alpha}) !important;
-                    backdrop-filter: blur(4px) !important;
-                    border-radius: ${radius}px !important;
-                }
-                ._3TORb {
-                    background-color: hsla(${hue}, 68%, 43%, ${alpha}) !important;
-                    border-radius: ${radius}px !important;
-                }
-                .zUJzi, .uwn5j, ._2BvOT, ._375XK {
-                    border: none !important;
-                    background-color: hsla(${hue}, 68%, 43%, ${alpha}) !important;
-                }
-                ._375XK textarea {
-                    border: none !important;
-                    background-color: hsla(${hue}, 68%, 43%, ${alpha * 5.6}) !important;
-                }
-                ._1q4mD {
-                background-color: hsla(${hue}, 68%, 43%, ${alpha}) !important;
-                 backdrop-filter: blur(4px) !important;
-                 }
-
-            /* GLASS PANELS END */`;
-            dynamicStyle.textContent = dynamicStyle.textContent.replace(/\/\* GLASS PANELS START \*\/[\s\S]*?\/\* GLASS PANELS END \*\//g, '');
-
-            dynamicStyle.textContent += glassCSS;
-        }
-        function toggleInvisibleAvatars(enabled) {
-            if (enabled) {
-                const script = document.createElement('script');
-                script.textContent = `(${removeBlueBackgrounds.toString()})();`;
-                document.body.appendChild(script);
-            } else {
-                // This would need a way to revert the changes, which is complex
-                // For now, we'll just reload the page
-                window.location.reload();
-            }
-        }
-
-        function removeBlueBackgrounds() {
-            "use strict";
-
-            function removeBlueBackground(imageUrl, callback) {
-                const img = new Image();
-                img.crossOrigin = "Anonymous";
-                img.onload = function() {
-                    const canvas = document.createElement("canvas");
-                    const ctx = canvas.getContext("2d");
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    ctx.drawImage(img, 0, 0, img.width, img.height);
-                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                    const data = imageData.data;
-                    for (let i = 0; i < data.length; i += 4) {
-                        const r = data[i];
-                        const g = data[i + 1];
-                        const b = data[i + 2];
-
-                        if (b > 150 && b > r && b > g) {
-                            data[i + 3] = 0;
-                        }
-                    }
-                    ctx.putImageData(imageData, 0, 0);
-                    callback(canvas.toDataURL());
-                };
-                img.src = imageUrl;
-            }
-
-            function processImages() {
-                document.querySelectorAll("image._3tYRU").forEach((imageElement) => {
-                    removeBlueBackground(imageElement.getAttribute("xlink:href"), (newImageUrl) => {
-                        imageElement.setAttribute("xlink:href", newImageUrl);
-                    });
-                });
-            }
-
-            window.addEventListener("load", processImages);
-        }
-
-        function loadOnlineCSS(urls) {
-            document.querySelectorAll('link[data-kogama-enhanced="online-style"]').forEach(el => el.remove());
-
-            if (!urls) return;
-
-            const urlList = urls.split('\n').filter(url => url.trim().length > 0);
-
-            urlList.forEach(url => {
-                if (url.startsWith('http')) {
-                    const link = document.createElement('link');
-                    link.href = url;
-                    link.rel = 'stylesheet';
-                    link.dataset.kogamaEnhanced = 'online-style';
-                    link.onload = () => onlineStylesInput.classList.add('valid');
-                    link.onerror = () => onlineStylesInput.classList.remove('valid');
-                    document.head.appendChild(link);
-                }
-            });
-        }
-        function applyCustomCSS(css) {
-            let customStyle = document.getElementById('kogama-custom-css');
-            if (!customStyle) {
-                customStyle = document.createElement('style');
-                customStyle.id = 'kogama-custom-css';
-                document.head.appendChild(customStyle);
-            }
-            customStyle.textContent = css;
-        }
-        function loadStylesSettings() {
-            const savedConfig = GM_getValue('UConfig', {});
-            if (savedConfig.glassPanels !== undefined) {
-                glassPanelsToggle.checked = savedConfig.glassPanels.enabled;
-                glassRadiusInput.value = savedConfig.glassPanels.radius || 8;
-                glassHueSlider.value = savedConfig.glassPanels.hue || 270;
-                glassHueValue.textContent = savedConfig.glassPanels.hue || 270;
-                glassAlphaSlider.value = (savedConfig.glassPanels.alpha || 0.16) * 100;
-                glassAlphaValue.textContent = Math.round((savedConfig.glassPanels.alpha || 0.16) * 100);
-            } else {
-                // default ig
-                glassPanelsToggle.checked = true;
-                glassRadiusInput.value = 8;
-                glassHueSlider.value = 270;
-                glassHueValue.textContent = 270;
-                glassAlphaSlider.value = 16;
-                glassAlphaValue.textContent = 16;
-            }
-
-            if (savedConfig.invisibleAvatars !== undefined) {
-                invisibleAvatarsToggle.checked = savedConfig.invisibleAvatars;
-            }
-
-            if (savedConfig.onlineStyles) {
-                onlineStylesInput.value = savedConfig.onlineStyles;
-            }
-
-            if (savedConfig.customCSS) {
-                customCSSInput.value = savedConfig.customCSS;
-            }
-            updateGlassPanelStyles();
-            if (invisibleAvatarsToggle.checked) {
-                toggleInvisibleAvatars(true);
-            }
-            loadOnlineCSS(onlineStylesInput.value);
-            applyCustomCSS(customCSSInput.value);
-        }
-        function saveStylesSettings() {
-            const currentConfig = GM_getValue('UConfig', {});
-
-            currentConfig.glassPanels = {
-                enabled: glassPanelsToggle.checked,
-                radius: parseInt(glassRadiusInput.value),
-                hue: parseInt(glassHueSlider.value),
-                alpha: parseInt(glassAlphaSlider.value) / 100
-            };
-
-            currentConfig.invisibleAvatars = invisibleAvatarsToggle.checked;
-            currentConfig.onlineStyles = onlineStylesInput.value;
-            currentConfig.customCSS = customCSSInput.value;
-
-            GM_setValue('UConfig', currentConfig);
-        }
-        glassPanelsToggle.addEventListener('change', () => {
-            updateGlassPanelStyles();
-            saveStylesSettings();
-        });
-
-        glassRadiusInput.addEventListener('input', () => {
-            updateGlassPanelStyles();
-            saveStylesSettings();
-        });
-
-        glassHueSlider.addEventListener('input', () => {
-            glassHueValue.textContent = glassHueSlider.value;
-            updateGlassPanelStyles();
-            saveStylesSettings();
-        });
-
-        glassAlphaSlider.addEventListener('input', () => {
-            glassAlphaValue.textContent = glassAlphaSlider.value;
-            updateGlassPanelStyles();
-            saveStylesSettings();
-        });
-
-        invisibleAvatarsToggle.addEventListener('change', () => {
-            toggleInvisibleAvatars(invisibleAvatarsToggle.checked);
-            saveStylesSettings();
-        });
-
-        onlineStylesInput.addEventListener('change', () => {
-            loadOnlineCSS(onlineStylesInput.value);
-            saveStylesSettings();
-        });
-
-        customCSSInput.addEventListener('change', () => {
-            applyCustomCSS(customCSSInput.value);
-            saveStylesSettings();
-        });
-
-        loadStylesSettings();
-    }
-    function initSettingsPanel() {
-        const panel = createSettingsPanel();
-        makeDraggable(panel);
-        setupTabs(panel);
-        setupGradientTab(panel);
-        setupFontTab(panel);
-        setupPrivacyTab(panel);
-        setupStylesTab(panel);
-        panel.querySelector('.settings-panel-close').addEventListener('click', () => {
-            panel.classList.remove('visible');
-        });
-
-        return panel;
-    }
-
-    function createSettingsButton() {
-        const gearSVG = `
-            <svg class="custom-gear-icon" stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 512 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                <path d="M487.4 315.7l-42.6-24.6c4.3-23.2 4.3-47 0-70.2l42.6-24.6c4.9-2.8 7.1-8.6 5.5-14-11.1-35.6-30-67.8-54.7-94.6-3.8-4.1-10-5.1-14.8-2.3L380.8 110c-17.9-15.4-38.5-27.3-60.8-35.1V25.8c0-5.6-3.9-10.5-9.4-11.7-36.7-8.2-74.3-7.8-109.2 0-5.5 1.2-9.4 6.1-9.4 11.7V75c-22.2 7.9-42.8 19.8-60.8 35.1L88.7 85.5c-4.9-2.8-11-1.9-14.8 2.3-24.7 26.7-43.6 58.9-54.7 94.6-1.7 5.4.6 11.2 5.5 14L67.3 221c-4.3 23.2-4.3 47 0 70.2l-42.6 24.6c-4.9 2.8-7.1 8.6-5.5 14 11.1 35.6 30 67.8 54.7 94.6 3.8 4.1 10 5.1 14.8 2.3l42.6-24.6c17.9 15.4 38.5 27.3 60.8 35.1v49.2c0 5.6 3.9 10.5 9.4 11.7 36.7 8.2 74.3 7.8 109.2 0 5.5-1.2 9.4-6.1 9.4-11.7v-49.2c22.2-7.9 42.8-19.8 60.8-35.1l42.6 24.6c4.9 2.8 11 1.9 14.8-2.3 24.7-26.7 43.6-58.9 54.7-94.6 1.5-5.5-.7-11.3-5.6-14.1zM256 336c-44.1 0-80-35.9-80-80s35.9-80 80-80 80 35.9 80 80-35.9 80-80 80z"></path>
-            </svg>
-        `;
-
-        const settingsButton = document.createElement('button');
-        settingsButton.className = 'MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall custom-settings-button css-rebkop';
-        settingsButton.setAttribute('tabindex', '0');
-        settingsButton.setAttribute('type', 'button');
-        settingsButton.innerHTML = gearSVG;
-
-        const container = document.createElement('div');
-        container.className = 'custom-settings-container';
-        container.appendChild(settingsButton);
-
-        const listItem = document.createElement('li');
-        listItem.className = '_3WhKY';
-        listItem.appendChild(container);
-
-        return { button: settingsButton, element: listItem };
-    }
-
-    function initialize() {
-        const panel = initSettingsPanel();
-        const { button, element } = createSettingsButton();
-        const notificationItem = document.querySelector('li._3WhKY:has(button.fodSP)');
-        if (notificationItem) {
-            notificationItem.parentNode.insertBefore(element, notificationItem);
-            button.addEventListener('click', () => {
-                panel.classList.toggle('visible');
-            });
-        } else {
-            const observer = new MutationObserver(() => {
-                const notificationItem = document.querySelector('li._3WhKY:has(button.fodSP)');
-                if (notificationItem) {
-                    notificationItem.parentNode.insertBefore(element, notificationItem);
-                    button.addEventListener('click', () => {
-                        panel.classList.toggle('visible');
-                    });
-                    observer.disconnect();
-                }
-            });
-
-            observer.observe(document.body, {
-                childList: true,
-                subtree: true
-            });
-            setTimeout(() => {
-                const notificationItem = document.querySelector('li._3WhKY:has(button.fodSP)');
-                if (notificationItem) {
-                    notificationItem.parentNode.insertBefore(element, notificationItem);
-                    button.addEventListener('click', () => {
-                        panel.classList.toggle('visible');
-                    });
-                }
-                observer.disconnect();
-            }, 5000);
-        }
-    }
-    if (document.readyState === 'complete') {
-        initialize();
-    } else {
-        window.addEventListener('load', initialize);
-    }
-})();
-
-// Avatar Finder V3: Logic by Selene
-(function() {
-  'use strict';
-
-  let modalMessage = null;
-  let modalSpinner = null;
-
-  function gmFetchJson(url) {
-    return new Promise((resolve, reject) => {
-      GM_xmlhttpRequest({
-        method: 'GET',
-        url,
-        onload: res => {
-          try { resolve(JSON.parse(res.responseText)); }
-          catch(e){ reject(e); }
-        },
-        onerror: reject
-      });
-    });
+(function() { //Config Menu
+  "use strict";
+
+  const PANEL_ID = "utilifyv2_panel";
+  const STYLE_ID = "utilifyv2_style";
+  const CACHE_KEY = "UConfig";
+  const SETTINGS_BUTTON_ID = "utilifyv2_settings_btn";
+  const SETTINGS_CONTAINER_ID = "utilifyv2_settings_container";
+  const UPDATE_RAW_URL = "https://raw.githubusercontent.com/cybrskunk/Utilify/main/Script/Rewrite/Utilify.user.js";
+  const UPDATE_REPO_URL = "https://github.com/cybrskunk/Utilify/blob/main/Script/Rewrite/Utilify.user.js";
+
+  const defaultConfig = {
+    gradient: null,
+    gradientAngle: 45,
+    gradientColor1: "#3a3a3a",
+    gradientColor2: "#2b2a2a",
+    fontFamily: null,
+    onlineFont: null,
+    glassPanels: { enabled: true, radius: 8, hue: 270, alpha: 0.16 },
+    invisibleAvatars: false,
+    onlineStyles: "",
+    customCSS: "",
+    disableFriendslist: false,
+    blurSensitive: false,
+    blurComments: false,
+    experimentalImageProcessing: false,
+    appearOffline: false,
+    openOnLoad: false
+  };
+
+  function safeParse(raw, fallback) {
+    try { return raw ? JSON.parse(raw) : fallback; } catch { return fallback; }
   }
 
-  function getHost() {
-    const h = location.hostname;
-    if (h.includes('friends.kogama.com')) return 'friends.kogama.com';
-    if (h.includes('kogama.com.br')) return 'kogama.com.br';
-    return 'www.kogama.com';
+  function gmGet(k, fallback) {
+    try {
+      if (typeof GM_getValue === "function") return GM_getValue(k, fallback);
+      return safeParse(localStorage.getItem(k), fallback);
+    } catch { return fallback; }
   }
 
-  function decodeEntities(str) {
-    const txt = document.createElement('textarea');
-    txt.innerHTML = str;
-    return txt.value;
+  function gmSet(k, v) {
+    try {
+      if (typeof GM_setValue === "function") return GM_setValue(k, v);
+      localStorage.setItem(k, JSON.stringify(v));
+    } catch {}
   }
 
-  function showModal(msg, spinning = false) {
-    hideModal();
+  function getInstalledVersion() {
+    try {
+      if (typeof GM_info !== "undefined" && GM_info && GM_info.script && GM_info.script.version) return GM_info.script.version;
+    } catch {}
+    return "0.0.0";
+  }
 
-    const overlay = document.createElement('div');
-    overlay.id = 'am-modal-overlay';
-    Object.assign(overlay.style, {
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      width: '100vw',
-      height: '100vh',
-      background: 'rgba(0, 0, 0, 0.4)',
-      zIndex: 10001,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backdropFilter: 'blur(2px)'
-    });
+  function ensureStyle() {
+    if (document.getElementById(STYLE_ID)) return;
+    const gold = "#ffb400";
+    const css = `
+#${PANEL_ID} { position: fixed; left: 50%; top: 50%; width: min(680px, 92vw); max-height: 56vh; border-radius:10px; overflow:hidden; background:#1b1c1d; color:#f2efe6; box-shadow:0 18px 50px rgba(0,0,0,0.6); z-index:120000; display:none; font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial; border:1px solid rgba(255,255,255,0.04); transition: box-shadow 180ms ease, transform 120ms ease; }
+#${PANEL_ID}.visible { display:flex; flex-direction:column; }
+#${PANEL_ID} .header { height:44px; display:flex; align-items:center; gap:10px; padding:0 12px; cursor:grab; user-select:none; background:linear-gradient(90deg,#262728,#1e1f20); border-bottom:1px solid rgba(255,255,255,0.03); }
+#${PANEL_ID} .title { font-weight:700; color:${gold}; font-size:15px; text-shadow:0 0 6px rgba(255,180,0,0.06); flex:1; letter-spacing:0.6px; }
+#${PANEL_ID} .close { background:transparent; border:0; color:inherit; cursor:pointer; padding:6px; border-radius:6px; font-weight:700; }
+#${PANEL_ID} .body { display:flex; gap:12px; padding:10px; height:calc(56vh - 44px); box-sizing:border-box; }
+#${PANEL_ID} .tabs { width:150px; background:#151516; border-right:1px solid rgba(255,255,255,0.02); padding:12px; overflow:auto; border-radius:6px; }
+#${PANEL_ID} .tab { padding:10px 12px; cursor:pointer; border-left:4px solid transparent; color:#d8d8d2; margin-bottom:8px; border-radius:6px; transition:all .12s; font-size:13px; }
+#${PANEL_ID} .tab.active { background: rgba(255,180,0,0.06); border-left-color:${gold}; color:${gold}; transform:translateX(4px); box-shadow: inset 0 -1px 0 rgba(255,255,255,0.02); }
+#${PANEL_ID} .content { flex:1; overflow:auto; padding:10px; }
+#${PANEL_ID} input[type="range"] { width:100%; }
+#${PANEL_ID} .small { font-size:13px; color:#dedbcf; }
+#${SETTINGS_CONTAINER_ID} { display:flex; align-items:center; margin-right:8px; z-index:1001; }
+#${SETTINGS_BUTTON_ID} { background:transparent; border:0; cursor:pointer; padding:6px; border-radius:6px; display:flex; align-items:center; justify-content:center; color:#fff; }
+#${SETTINGS_BUTTON_ID} svg { transition:transform .25s ease; fill:#ffffff; }
+#${SETTINGS_BUTTON_ID}:hover svg { transform:rotate(12deg); }
+.field-row { margin:8px 0; display:flex; gap:8px; align-items:center; }
+.color-input { width:44px; height:30px; border:1px solid #333; border-radius:4px; cursor:pointer; background:#fff; }
+.text-input, .small-area, select, input[type="text"], input[type="number"] { width:100%; padding:7px; background:#111; border:1px solid #2a2a2a; border-radius:6px; color:#efe9d9; box-sizing:border-box; }
+.button { padding:8px 10px; background:${gold}; color:#111; border-radius:8px; border:0; cursor:pointer; font-weight:700; }
+.muted { color:#9a9a92; font-size:12px; }
+.warn { color:#ffbe66; font-weight:700; font-size:13px; margin:6px 0; }
+.small-note { font-size:12px; color:#bfbcae; margin-top:6px; }
+.status-badge { display:inline-block; padding:6px 8px; border-radius:8px; font-size:13px; margin-left:8px; }
+.update-available { background:linear-gradient(90deg,#ffb86b,#ff6b6b); color:#111; font-weight:700; }
+.update-ok { background:rgba(255,180,0,0.12); color:${gold}; font-weight:700; }
+`;
+    const s = document.createElement("style");
+    s.id = STYLE_ID;
+    s.textContent = css;
+    document.head.appendChild(s);
+  }
 
-    const container = document.createElement('div');
-    Object.assign(container.style, {
-      background: '#fff',
-      padding: '24px',
-      borderRadius: '10px',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      position: 'relative',
-      minWidth: '220px'
-    });
+  function getConfig() {
+    const raw = gmGet(CACHE_KEY, null) || {};
+    return Object.assign({}, defaultConfig, raw);
+  }
 
-    const close = document.createElement('div');
-    close.textContent = '✖';
-    Object.assign(close.style, {
-      position: 'absolute',
-      top: '10px',
-      right: '12px',
-      cursor: 'pointer',
-      fontSize: '16px',
-      color: '#999'
-    });
-    close.addEventListener('click', hideModal);
+  function saveConfig(cfg) {
+    gmSet(CACHE_KEY, cfg);
+  }
 
-    const spinner = document.createElement('div');
-    spinner.id = 'am-spinner';
-    Object.assign(spinner.style, {
-      width: '48px',
-      height: '48px',
-      border: '3px solid rgba(0,0,0,0.1)',
-      borderTop: '3px solid #3498db',
-      borderRadius: '50%',
-      animation: 'am-spin 1s linear infinite',
-      marginBottom: '16px',
-      willChange: 'transform',
-      backfaceVisibility: 'hidden'
-    });
+  function createPanel() {
+    if (document.getElementById(PANEL_ID)) return document.getElementById(PANEL_ID);
+    const panel = document.createElement("div");
+    panel.id = PANEL_ID;
+    panel.innerHTML = `
+      <div class="header" role="toolbar">
+        <div class="title">UtilifyV2 configuration</div>
+        <div id="version_badge" class="status-badge update-ok">v${getInstalledVersion()}</div>
+        <button class="close" aria-label="Close">✕</button>
+      </div>
+      <div class="body">
+        <div class="tabs" role="tablist">
+          <div class="tab active" data-tab="gradient" role="tab" tabindex="0">Gradient</div>
+          <div class="tab" data-tab="experimental" role="tab" tabindex="0">Experimental</div>
+          <div class="tab" data-tab="privacy" role="tab" tabindex="0">Privacy</div>
+          <div class="tab" data-tab="styles" role="tab" tabindex="0">Styles</div>
+          <div class="tab" data-tab="fonts" role="tab" tabindex="0">Fonts</div>
+          <div class="tab" data-tab="credits" role="tab" tabindex="0">Credits</div>
+        </div>
+        <div class="content" role="region">
+          <div class="tab-content" id="tab-gradient">
+            <div class="field-row"><div class="small">Angle</div><input id="gradient-angle" type="range" min="0" max="360" value="45" /></div>
+            <div class="field-row"><div class="small">Start color</div><input id="color1" class="color-input" type="color" value="#3a3a3a"/><input id="color1hex" class="text-input" placeholder="#HEX" /></div>
+            <div class="field-row"><div class="small">End color</div><input id="color2" class="color-input" type="color" value="#2b2a2a"/><input id="color2hex" class="text-input" placeholder="#HEX" /></div>
+            <div class="field-row"><input id="gradient-input" class="text-input" placeholder="linear-gradient(45deg, #3a3a3a, #2b2a2a)" /></div>
+            <div style="display:flex;gap:8px;margin-top:8px"><button id="gradient-copy" class="button">Copy</button><button id="gradient-clear" class="button">Clear</button></div>
+            <div class="small-note">Pick colors, adjust angle, or paste a custom linear-gradient. Changes save instantly.</div>
+          </div>
 
-    const message = document.createElement('div');
-    message.innerHTML = msg;
-    modalMessage = message;
-    modalSpinner = spinner;
-    Object.assign(message.style, {
-      color: '#000',
-      fontSize: '14px',
-      fontFamily: 'sans-serif',
-      textAlign: 'center'
-    });
+          <div class="tab-content" id="tab-experimental" style="display:none;">
+            <div class="warn">Experimental features may be unstable. Use only if you understand the effects.</div>
+            <div class="field-row"><label><input type="checkbox" id="exp-image-process" /> Image Processing</label></div>
+            <div class="field-row"><label><input type="checkbox" id="exp-appear-offline" /> Appear Offline</label></div>
+            <div class="small-note">Image edits are in-place and cannot be reverted without reload.<br> Appear Offline blocks POSTs to pulse.</div>
+          </div>
 
-    if (spinning) container.append(spinner);
-    container.append(close, message);
-    overlay.appendChild(container);
-    document.body.appendChild(overlay);
+          <div class="tab-content" id="tab-privacy" style="display:none;">
+            <div class="small-note">Privacy toggles apply immediately and persist.</div>
+            <div class="field-row"><label><input type="checkbox" id="disable-friendslist" /> Disable Friendslist</label></div>
+            <div class="field-row"><label><input type="checkbox" id="blur-sensitive" /> Blur sensitive content</label></div>
+            <div class="field-row"><label><input type="checkbox" id="blur-comments" /> Blur comments</label></div>
+          </div>
 
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes am-spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
+          <div class="tab-content" id="tab-styles" style="display:none;">
+            <div class="field-row"><label><input type="checkbox" id="glass-panels-toggle" /> Glass Panels</label></div>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <div style="flex:1"><div class="small">Border radius</div><input id="glass-radius" type="number" min="0" max="50" value="8" /></div>
+              <div style="flex:1"><div class="small">Hue</div><input id="glass-hue" type="range" min="0" max="360" value="270" /><div id="glass-hue-value" class="small-note">270</div></div>
+            </div>
+            <div style="margin-top:8px"><div class="small">Transparency (alpha %)</div><input id="glass-alpha" type="range" min="1" max="50" value="16" /><div id="glass-alpha-value" class="small-note">16</div></div>
+            <div style="margin-top:12px"><div class="small">Online CSS URLs (one per line)</div><textarea id="online-styles-input" class="small-area"></textarea></div>
+            <div style="margin-top:8px"><div class="small">Custom CSS</div><textarea id="custom-css-input" class="small-area"></textarea></div>
+          </div>
+
+          <div class="tab-content" id="tab-fonts" style="display:none;">
+            <div class="small">Main font</div>
+            <select id="main-font" style="width:100%; margin-top:6px;">
+              <option value="default">Default (system)</option>
+              <option value="roboto">Roboto</option>
+              <option value="comfortaa">Comfortaa</option>
+              <option value="online">Online font</option>
+            </select>
+            <div style="margin-top:8px"><div class="small">Online font URL</div><input id="online-font-url" type="text" style="width:100%; padding:6px; margin-top:6px;" /></div>
+            <div style="margin-top:8px"><div class="small">Preview</div><div id="font-preview" style="padding:8px; background:#111; margin-top:6px; border-radius:6px;">The quick brown fox jumps over the lazy dog</div></div>
+          </div>
+
+          <div class="tab-content" id="tab-credits" style="display:none;">
+            <div class="small">Credits</div>
+            <div class="small-note" style="margin:8px 0">UtilifyV2 maintained by Simon. Update notice appears only if a newer release is detected.</div>
+            <div style="display:flex;gap:8px;align-items:center"><button id="check-update" class="button">Check for updates</button><div id="update-status" class="status-badge"></div></div>
+            <div id="update-info" class="small-note" style="margin-top:8px"></div>
+          </div>
+        </div>
+      </div>
     `;
-    document.head.appendChild(style);
+    document.body.appendChild(panel);
+    return panel;
   }
 
-  function updateModalMessage(msg, success = true) {
-    if (modalMessage) {
-      modalMessage.textContent = msg;
-      if (modalSpinner && modalSpinner.parentElement) {
-        modalSpinner.remove();
-        modalSpinner = null;
-      }
-      const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      icon.setAttribute("viewBox", "0 0 24 24");
-      icon.setAttribute("width", "36");
-      icon.setAttribute("height", "36");
-      icon.setAttribute("stroke", success ? "green" : "red");
-      icon.setAttribute("fill", "none");
-      icon.setAttribute("stroke-width", "2");
-      icon.setAttribute("stroke-linecap", "round");
-      icon.setAttribute("stroke-linejoin", "round");
+  function clampPosition(left, top, panelW, panelH) {
+    const pad = 8;
+    const minLeft = pad;
+    const maxLeft = Math.max(pad, Math.floor(window.innerWidth - panelW - pad));
+    const minTop = pad;
+    const maxTop = Math.max(pad, Math.floor(window.innerHeight - panelH - pad));
+    return { left: Math.min(Math.max(minLeft, Math.floor(left)), maxLeft), top: Math.min(Math.max(minTop, Math.floor(top)), maxTop) };
+  }
 
-      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      path.setAttribute("d", success ? "M5 13l4 4L19 7" : "M18 6L6 18M6 6l12 12");
-      icon.appendChild(path);
+  function enableDrag(panel) {
+    const header = panel.querySelector(".header");
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let startLeft = 0;
+    let startTop = 0;
+    let panelW = 0;
+    let panelH = 0;
 
-      const container = modalMessage.parentElement;
-      container.insertBefore(icon, modalMessage);
+    function setTransition(enabled) {
+      panel.style.transition = enabled ? "box-shadow 180ms ease, transform 120ms ease" : "none";
     }
-  }
+    setTransition(true);
 
-  function hideModal() {
-    const e = document.getElementById('am-modal-overlay');
-    if (e) e.remove();
-    modalMessage = null;
-    modalSpinner = null;
-  }
-
-  const match = location.pathname.match(/\/profile\/(\d+)\/avatars/);
-  if (!match) return;
-  const userId = match[1], server = getHost();
-
-  let inventoryIds = [], idToName = {};
-  async function loadInventory() {
-    let page = 1, pages = 1;
-    do {
-      try {
-        const json = await gmFetchJson(`https://${server}/user/${userId}/avatar/?page=${page}&count=400`);
-        (json.data||[]).forEach(a => {
-          inventoryIds.push(a.avatar_id);
-          idToName[a.avatar_id] = a.avatar_name||'';
-        });
-        pages = (json.paging && json.paging.pages) || 1;
-      } catch(e) {
-        console.error(e);
-        showModal('Error loading avatars');
-        return;
-      }
-      page++;
-    } while(page <= pages);
-  }
-
-  async function fetchFeed(id, retries = 1) {
-    try {
-      const resp = await fetch(`https://${server}/api/feed/1/${id}`);
-      if (resp.status === 429 && retries > 0) {
-        await new Promise(r => setTimeout(r, 2000));
-        return fetchFeed(id, retries - 1);
-      }
-      if (!resp.ok) return null;
-      const j = await resp.json();
-      return j.data;
-    } catch {
-      return null;
+    function begin(px, py) {
+      const rect = panel.getBoundingClientRect();
+      const clamped = clampPosition(Math.round((window.innerWidth - rect.width) / 2), Math.round((window.innerHeight - rect.height) / 2), rect.width, rect.height);
+      const currLeft = panel.style.left ? parseInt(panel.style.left, 10) : rect.left;
+      const currTop = panel.style.top ? parseInt(panel.style.top, 10) : rect.top;
+      const leftPx = isFinite(currLeft) ? currLeft : clamped.left;
+      const topPx = isFinite(currTop) ? currTop : clamped.top;
+      panel.style.left = leftPx + "px";
+      panel.style.top = topPx + "px";
+      panel.style.transform = "";
+      startX = px;
+      startY = py;
+      startLeft = panel.offsetLeft;
+      startTop = panel.offsetTop;
+      panelW = panel.offsetWidth;
+      panelH = panel.offsetHeight;
+      isDragging = true;
+      header.style.cursor = "grabbing";
+      document.documentElement.style.userSelect = "none";
+      setTransition(false);
     }
+
+    function move(px, py) {
+      if (!isDragging) return;
+      const dx = px - startX;
+      const dy = py - startY;
+      let nl = startLeft + dx;
+      let nt = startTop + dy;
+      const clamped = clampPosition(nl, nt, panelW, panelH);
+      nl = clamped.left;
+      nt = clamped.top;
+      panel.style.left = nl + "px";
+      panel.style.top = nt + "px";
+    }
+
+    function end() {
+      if (!isDragging) return;
+      isDragging = false;
+      header.style.cursor = "";
+      document.documentElement.style.userSelect = "";
+      setTransition(true);
+    }
+
+    header.addEventListener("pointerdown", (ev) => {
+      if (ev.target && ev.target.closest && ev.target.closest(".close")) return;
+      header.setPointerCapture && header.setPointerCapture(ev.pointerId);
+      begin(ev.clientX, ev.clientY);
+      ev.preventDefault();
+    });
+
+    document.addEventListener("pointermove", (ev) => {
+      if (!isDragging) return;
+      move(ev.clientX, ev.clientY);
+    });
+
+    document.addEventListener("pointerup", (ev) => {
+      if (!isDragging) return;
+      try { header.releasePointerCapture && header.releasePointerCapture(ev.pointerId); } catch {}
+      end();
+    });
+
+    window.addEventListener("resize", debounce(() => {
+      const rect = panel.getBoundingClientRect();
+      const clamped = clampPosition(rect.left, rect.top, rect.width, rect.height);
+      panel.style.left = clamped.left + "px";
+      panel.style.top = clamped.top + "px";
+    }, 120));
   }
 
-  async function findProductForAvatar(avId) {
-    showModal('Searching...', true);
-    const rawName = idToName[avId] || '';
-    const expectedName = decodeEntities(rawName);
-    let dataStr;
-    try {
-      dataStr = (await gmFetchJson(`https://${server}/model/market/a-${avId}/`)).data || '';
-    } catch(e) {
-      console.error(e);
-      updateModalMessage('Failed fetching model info', false);
+  function debounce(fn, t) {
+    let id = 0;
+    return function(...a) {
+      clearTimeout(id);
+      id = setTimeout(() => fn.apply(this, a), t);
+    };
+  }
+
+  function setupTabs(panel) {
+    const tabs = panel.querySelectorAll(".tab");
+    const contents = panel.querySelectorAll(".tab-content");
+    tabs.forEach(t => t.addEventListener("click", () => {
+      tabs.forEach(x => x.classList.remove("active"));
+      contents.forEach(c => c.style.display = "none");
+      t.classList.add("active");
+      const id = "tab-" + t.dataset.tab;
+      const node = panel.querySelector("#" + id);
+      if (node) node.style.display = "";
+    }));
+  }
+
+  function applyGradient(value, angle, c1, c2) {
+    if (!value) {
+      document.body.style.background = "";
+      const c = getConfig(); c.gradient = null; saveConfig(c);
       return;
     }
-    const sold = (dataStr.match(/sold_count=(\d+)/)||[])[1];
-    if (sold && +sold !== 0) {
-      GM_setClipboard(avId);
-      updateModalMessage(`Found! Product ID: a-${avId}`, true);
-      return;
-    }
-    const cr = dataStr.match(/created=datetime\.datetime\((\d+),\s*(\d+),\s*(\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+))?\)/);
-    if (!cr) {
-      updateModalMessage('Failed parsing creation date', false);
-      return;
-    }
-    const Y = +cr[1], Mo = +cr[2], D = +cr[3], H = +cr[4], Mi = +cr[5], S = cr[6]?+cr[6]:0;
-    const target = new Date(Date.UTC(Y, Mo-1, D, H, Mi, S));
-
-    let low = 1, high = 80000000, approx = null;
-    while (low <= high) {
-      const mid = (low + high) >> 1;
-      const f = await fetchFeed(mid);
-      if (!f || !f.created) { high = mid - 1; continue; }
-      const dt = new Date(f.created);
-      if (dt < target) low = mid + 1;
-      else if (dt > target) high = mid - 1;
-      else { approx = mid; break; }
-    }
-    if (approx === null) approx = low <= 80000000 ? low : high;
-
-    const span = 100, start = Math.max(1, approx - span), end = approx + span;
-    for (let i = start; i <= end; i++) {
-      const f = await fetchFeed(i);
-      await new Promise(r => setTimeout(r, 20));
-      if (!f || !f.created) continue;
-      if (f.profile_id == userId) {
-        try {
-          const info = JSON.parse(f._data||'{}');
-          const pn = decodeEntities(info.product_name || '');
-          if (pn === expectedName) {
-            GM_setClipboard(info.product_id.slice(2));
-            updateModalMessage(`Found via feed match! Product ID: ${info.product_id}`, true);
-            return;
-          }
-        } catch {}
-      }
-      if (f.created === target.toISOString().split('.')[0]+'+00:00') {
-        try {
-          const info = JSON.parse(f._data||'{}');
-          GM_setClipboard(info.product_id.slice(2));
-          updateModalMessage(`Found! Product ID: ${info.product_id}`, true);
-          return;
-        } catch {}
-      }
-    }
-    updateModalMessage('No matching feed entry found', false);
+    document.body.style.background = value;
+    document.body.style.backgroundAttachment = "fixed";
+    const cfg = getConfig(); cfg.gradient = value; if (angle) cfg.gradientAngle = angle; if (c1) cfg.gradientColor1 = c1; if (c2) cfg.gradientColor2 = c2; saveConfig(cfg);
   }
 
-  async function attachButtons() {
-    const items = document.querySelectorAll('.MuiGrid-root.MuiGrid-container .MuiGrid-item');
-    let pageNum = 1;
-    const active = document.querySelector('.MuiPaginationItem-page.Mui-selected, .MuiPaginationItem-root.Mui-selected');
-    if (active) pageNum = parseInt(active.textContent.trim(), 10) || 1;
-    items.forEach((el, idx) => {
-      if (el.querySelector('.am-find-overlay')) return;
-      const globalIdx = (pageNum - 1) * items.length + idx;
-      const avId = inventoryIds[globalIdx];
-      if (!avId) return;
+  function loadGradientTab(panel) {
+    const angleInput = panel.querySelector("#gradient-angle");
+    const color1 = panel.querySelector("#color1");
+    const color2 = panel.querySelector("#color2");
+    const color1hex = panel.querySelector("#color1hex");
+    const color2hex = panel.querySelector("#color2hex");
+    const gradientInput = panel.querySelector("#gradient-input");
+    const copyBtn = panel.querySelector("#gradient-copy");
+    const clearBtn = panel.querySelector("#gradient-clear");
 
-      const div = document.createElement('div');
-      div.className = 'am-find-overlay';
-      div.innerHTML = `
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>`;
-      Object.assign(div.style, {
-        position: 'absolute',
-        bottom: '6px',
-        right: '6px',
-        zIndex: 999,
-        width: '28px',
-        height: '28px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'rgba(255,255,255,0.8)',
-        border: '1px solid #ccc',
-        borderRadius: '50%',
-        cursor: 'pointer',
-        userSelect: 'none',
-        transition: 'transform 0.2s ease'
-      });
-      div.addEventListener('mouseenter', () => div.style.transform = 'scale(1.1)');
-      div.addEventListener('mouseleave', () => div.style.transform = 'scale(1)');
-      div.addEventListener('click', () => findProductForAvatar(avId));
-      el.style.position = 'relative';
-      el.appendChild(div);
+    const cfg = getConfig();
+    angleInput.value = cfg.gradientAngle || 45;
+    color1.value = cfg.gradientColor1 || "#3a3a3a";
+    color2.value = cfg.gradientColor2 || "#2b2a2a";
+    color1hex.value = color1.value;
+    color2hex.value = color2.value;
+    gradientInput.value = cfg.gradient || `linear-gradient(${angleInput.value}deg, ${color1.value}, ${color2.value})`;
+
+    function updateFromPickers() {
+      const a = parseInt(angleInput.value,10);
+      const cA = color1.value;
+      const cB = color2.value;
+      color1hex.value = cA;
+      color2hex.value = cB;
+      const grad = `linear-gradient(${a}deg, ${cA}, ${cB})`;
+      gradientInput.value = grad;
+      applyGradient(grad, a, cA, cB);
+    }
+
+    angleInput.addEventListener("input", updateFromPickers);
+    color1.addEventListener("input", updateFromPickers);
+    color2.addEventListener("input", updateFromPickers);
+
+    color1hex.addEventListener("change", () => { const v = color1hex.value.trim(); if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v)) { color1.value = v; updateFromPickers(); }});
+    color2hex.addEventListener("change", () => { const v = color2hex.value.trim(); if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v)) { color2.value = v; updateFromPickers(); }});
+
+    gradientInput.addEventListener("input", (e) => {
+      const val = e.target.value.trim();
+      if (!val) return;
+      const m = val.match(/linear-gradient\((\d+)deg\s*,\s*(#[0-9a-f]{3,6}|rgba?\([^)]+\))\s*,\s*(#[0-9a-f]{3,6}|rgba?\([^)]+\))\)/i);
+      if (m) {
+        angleInput.value = parseInt(m[1],10);
+        color1.value = m[2];
+        color2.value = m[3];
+        color1hex.value = color1.value;
+        color2hex.value = color2.value;
+        applyGradient(val, parseInt(m[1],10), color1.value, color2.value);
+      }
+    });
+
+    copyBtn.addEventListener("click", () => {
+      const v = gradientInput.value.trim();
+      if (v) navigator.clipboard?.writeText(v);
+      copyBtn.textContent = "Copied!";
+      setTimeout(()=>copyBtn.textContent="Copy",1200);
+    });
+    clearBtn.addEventListener("click", () => {
+      gradientInput.value=""; angleInput.value=45; color1.value="#3a3a3a"; color2.value="#2b2a2a";
+      color1hex.value=color1.value; color2hex.value=color2.value;
+      const c = getConfig(); c.gradient=null; saveConfig(c); applyGradient(null);
     });
   }
 
-  (async () => {
-    await loadInventory();
-    attachButtons();
-    setInterval(attachButtons, 3000);
-  })();
+  function ensurePrivacyStyle() {
+    let el = document.getElementById("utilifyv2_privacy_style");
+    if (!el) { el = document.createElement("style"); el.id = "utilifyv2_privacy_style"; document.head.appendChild(el); }
+    return el;
+  }
+
+  function updatePrivacyStyles(cfg) {
+    const el = ensurePrivacyStyle();
+    let css = "";
+    if (cfg.disableFriendslist) css += `._1Yhgq{display:none!important}\n`;
+    if (cfg.blurSensitive) css += `.css-k9ok3b,.css-b2nqhh,._13UrL .kR267 ._9smi2 ._1rJI8 ._1aUa_,._13UrL ._23KvS ._25Vmr ._2IqY6 ._2O_AH .vKjpS ._2ydTi,._375XK ._2XaOw,._3TORb ._1lvYU ._1taAL ._3zDi-{filter:blur(5px)!important;transition:filter .25s ease}\n.css-k9ok3b:hover,.css-b2nqhh:hover,._13UrL .kR267 ._9smi2 ._1rJI8 ._1aUa_:hover,._13UrL ._23KvS ._25Vmr ._2IqY6 ._2O_AH .vKjpS ._2ydTi:hover,._375XK ._2XaOw:hover,._3TORb ._1lvYU ._1taAL ._3zDi-:hover{filter:blur(0)!important}`;
+    if (cfg.blurComments) css += `._3Wsxf{filter:blur(5px) !important}\n._3Wsxf:hover{filter:none!important}\n`;
+    el.textContent = css;
+  }
+
+  function applyGlassPanels(cfg) {
+    let s = document.getElementById("utilifyv2_glass_style");
+    if (!s) { s = document.createElement("style"); s.id = "utilifyv2_glass_style"; document.head.appendChild(s); }
+    if (!cfg.glassPanels || !cfg.glassPanels.enabled) { s.textContent = ""; return; }
+    const { radius, hue, alpha } = cfg.glassPanels;
+    s.textContent = `.css-1udp1s3, .css-zslu1c, .css-1rbdj9p { background-color: hsla(${hue},68%,43%,${alpha}) !important; backdrop-filter: blur(3px) !important; border-radius: ${radius}px !important; }
+._3TORb { background-color: hsla(${hue},68%,43%,${alpha}) !important; border-radius: ${radius}px !important; }`;
+  }
+
+  function loadOnlineCSS(urls) {
+    document.querySelectorAll('link[data_utilify_online]').forEach(el => el.remove());
+    if (!urls) return;
+    urls.split("\n").map(s => s.trim()).filter(Boolean).forEach(url => {
+      try { const u = new URL(url); const l = document.createElement("link"); l.rel = "stylesheet"; l.href = u.href; l.dataset_utilify_online = "1"; document.head.appendChild(l); } catch {}
+    });
+  }
+
+  function applyCustomCSS(css) {
+    let el = document.getElementById("utilifyv2_custom_css");
+    if (!el) { el = document.createElement("style"); el.id = "utilifyv2_custom_css"; document.head.appendChild(el); }
+    el.textContent = css || "";
+  }
+
+  function loadFont(url) {
+    if (!url) return;
+    try { new URL(url); } catch { return; }
+    const existing = document.querySelector('link[data_utilify_font="1"]'); if (existing) existing.remove();
+    const l = document.createElement("link"); l.rel="stylesheet"; l.href=url; l.dataset_utilify_font="1"; document.head.appendChild(l);
+    const match = url.includes("fonts.googleapis.com") ? (url.match(/family=([^&:]+)/)||[])[1] : null;
+    const family = match ? match.replace(/\+/g," ") : "CustomFont";
+    let st = document.getElementById("utilifyv2_font_var"); if (!st) { st = document.createElement("style"); st.id="utilifyv2_font_var"; document.head.appendChild(st); }
+    st.textContent = `:root{--utilify-font:'${family}', system-ui, sans-serif}`;
+    const cfg = getConfig(); cfg.onlineFont = url; saveConfig(cfg); applyGlobalFont("var(--utilify-font), system-ui, sans-serif");
+  }
+
+  function applyGlobalFont(family) {
+    let st = document.getElementById("utilifyv2_global_font"); if (!st) { st = document.createElement("style"); st.id = "utilifyv2_global_font"; document.head.appendChild(st); }
+    st.textContent = `*{font-family:${family} !important;}`;
+  }
+
+  function enableImageBackgroundProcessing() {
+    const processed = new WeakSet();
+    async function removeBlueBackgroundFromUrl(url) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = "Anonymous";
+        img.onload = function() {
+          try {
+            const canvas = document.createElement("canvas");
+            const w = img.naturalWidth || img.width;
+            const h = img.naturalHeight || img.height;
+            if (!w || !h) return resolve(url);
+            canvas.width = w; canvas.height = h;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img,0,0,w,h);
+            const id = ctx.getImageData(0,0,w,h);
+            const d = id.data;
+            for (let i = 0; i < d.length; i += 4) {
+              const r = d[i], g = d[i+1], b = d[i+2];
+              if (b > 150 && b > r && b > g) d[i+3] = 0;
+            }
+            ctx.putImageData(id,0,0);
+            resolve(canvas.toDataURL());
+          } catch { resolve(url); }
+        };
+        img.onerror = () => resolve(url);
+        img.src = url;
+      });
+    }
+
+    async function processElement(el) {
+      if (!el || processed.has(el)) return;
+      processed.add(el);
+      if (el.tagName === "IMG") {
+        const src = el.currentSrc || el.src;
+        if (!src) return;
+        const newUrl = await removeBlueBackgroundFromUrl(src);
+        if (newUrl && newUrl !== src) el.src = newUrl;
+      } else if (el.tagName.toLowerCase() === "image") {
+        const href = el.getAttribute("xlink:href") || el.getAttribute("href");
+        if (!href) return;
+        const newUrl = await removeBlueBackgroundFromUrl(href);
+        if (newUrl && newUrl !== href) el.setAttribute("xlink:href", newUrl);
+      } else {
+        const bg = (getComputedStyle(el).backgroundImage || "").match(/url\((?:'|")?(.*?)(?:'|")?\)/);
+        if (bg && bg[1]) {
+          const newUrl = await removeBlueBackgroundFromUrl(bg[1]);
+          el.style.backgroundImage = `url("${newUrl}")`;
+        }
+      }
+    }
+
+    function scanAndObserve() {
+      document.querySelectorAll("img, image, .avatar, ._3tYRU").forEach(el => processElement(el));
+      const mo = new MutationObserver(muts => {
+        for (const m of muts) {
+          m.addedNodes && m.addedNodes.forEach(node => {
+            if (!(node instanceof Element)) return;
+            if (node.matches && (node.matches("img, image, .avatar, ._3tYRU"))) processElement(node);
+            node.querySelectorAll && node.querySelectorAll("img, image, .avatar, ._3tYRU").forEach(n => processElement(n));
+          });
+        }
+      });
+      mo.observe(document.body, { childList:true, subtree:true });
+      return mo;
+    }
+    return scanAndObserve();
+  }
+
+  function applyAll(cfg) {
+    applyGradient(cfg.gradient || `linear-gradient(${cfg.gradientAngle||45}deg, ${cfg.gradientColor1||"#3a3a3a"}, ${cfg.gradientColor2||"#2b2a2a"})`, cfg.gradientAngle, cfg.gradientColor1, cfg.gradientColor2);
+    updatePrivacyStyles(cfg);
+    applyGlassPanels(cfg);
+    loadOnlineCSS(cfg.onlineStyles || "");
+    applyCustomCSS(cfg.customCSS || "");
+    if (cfg.onlineFont) loadFont(cfg.onlineFont);
+    if (cfg.invisibleAvatars) {
+      if (!window.__utilify_invisible_mo) window.__utilify_invisible_mo = enableImageBackgroundProcessing();
+    } else {
+      if (window.__utilify_invisible_mo) { try { window.__utilify_invisible_mo.disconnect(); } catch {} window.__utilify_invisible_mo = null; }
+    }
+    if (cfg.experimentalImageProcessing) {
+      if (!window.__utilify_invisible_mo) window.__utilify_invisible_mo = enableImageBackgroundProcessing();
+    }
+    if (cfg.appearOffline) installPulseAndChatBlocker(); else uninstallPulseAndChatBlocker();
+  }
+
+  function installPulseAndChatBlocker() {
+    if (window.__utilify_block_installed) return;
+    window.__utilify_orig_xhr_open = XMLHttpRequest.prototype.open;
+    window.__utilify_orig_fetch = window.fetch;
+    function shouldBlockPostPath(pathname) {
+      if (!pathname) return false;
+      if (/^\/user\/\d+\/pulse\/?$/.test(pathname)) return true;
+      return false;
+    }
+    XMLHttpRequest.prototype.open = function (method, url) {
+      try {
+        const m = (method || "").toString().toUpperCase();
+        if (m === "POST" && typeof url === "string") {
+          let full = url;
+          try { full = new URL(url, location.href).href; } catch {}
+          try {
+            const u = new URL(full);
+            const path = u.pathname || "";
+            if (shouldBlockPostPath(path)) {
+              return;
+            }
+          } catch {}
+        }
+      } catch {}
+      return window.__utilify_orig_xhr_open.apply(this, arguments);
+    };
+    window.fetch = function (resource, init) {
+      try {
+        const method = (init && init.method) ? ("" + init.method).toUpperCase() : "GET";
+        let url = resource instanceof Request ? resource.url : resource;
+        if (method === "POST" && typeof url === "string") {
+          let full = url;
+          try { full = new URL(url, location.href).href; } catch {}
+          try {
+            const u = new URL(full);
+            const path = u.pathname || "";
+            if (shouldBlockPostPath(path)) {
+              return Promise.resolve(new Response(null, { status: 204 }));
+            }
+          } catch {}
+        }
+      } catch {}
+      return window.__utilify_orig_fetch.apply(this, arguments);
+    };
+    window.__utilify_block_installed = true;
+  }
+
+  function uninstallPulseAndChatBlocker() {
+    if (!window.__utilify_block_installed) return;
+    if (window.__utilify_orig_xhr_open) {
+      XMLHttpRequest.prototype.open = window.__utilify_orig_xhr_open;
+      delete window.__utilify_orig_xhr_open;
+    }
+    if (window.__utilify_orig_fetch) {
+      window.fetch = window.__utilify_orig_fetch;
+      delete window.__utilify_orig_fetch;
+    }
+    window.__utilify_block_installed = false;
+  }
+
+  function applyConfigToUI(panel, cfg) {
+    panel.querySelector("#gradient-angle").value = cfg.gradientAngle || 45;
+    panel.querySelector("#color1").value = cfg.gradientColor1 || "#3a3a3a";
+    panel.querySelector("#color2").value = cfg.gradientColor2 || "#2b2a2a";
+    panel.querySelector("#color1hex").value = cfg.gradientColor1 || "#3a3a3a";
+    panel.querySelector("#color2hex").value = cfg.gradientColor2 || "#2b2a2a";
+    panel.querySelector("#gradient-input").value = cfg.gradient || `linear-gradient(${cfg.gradientAngle||45}deg, ${cfg.gradientColor1||"#3a3a3a"}, ${cfg.gradientColor2||"#2b2a2a"})`;
+    panel.querySelector("#glass-panels-toggle").checked = !!cfg.glassPanels?.enabled;
+    panel.querySelector("#glass-radius").value = cfg.glassPanels?.radius || 8;
+    panel.querySelector("#glass-hue").value = cfg.glassPanels?.hue || 270;
+    panel.querySelector("#glass-hue-value").textContent = cfg.glassPanels?.hue || 270;
+    panel.querySelector("#glass-alpha").value = Math.round((cfg.glassPanels?.alpha || 0.16) * 100);
+    panel.querySelector("#glass-alpha-value").textContent = Math.round((cfg.glassPanels?.alpha || 0.16) * 100);
+    panel.querySelector("#online-styles-input").value = cfg.onlineStyles || "";
+    panel.querySelector("#custom-css-input").value = cfg.customCSS || "";
+    panel.querySelector("#disable-friendslist").checked = !!cfg.disableFriendslist;
+    panel.querySelector("#blur-sensitive").checked = !!cfg.blurSensitive;
+    panel.querySelector("#blur-comments").checked = !!cfg.blurComments;
+    panel.querySelector("#main-font").value = cfg.fontFamily || "default";
+    panel.querySelector("#online-font-url").value = cfg.onlineFont || "";
+    panel.querySelector("#exp-image-process").checked = !!cfg.experimentalImageProcessing;
+    panel.querySelector("#exp-appear-offline").checked = !!cfg.appearOffline;
+  }
+
+  function wirePanel(panel) {
+    setupTabs(panel);
+    loadGradientTab(panel);
+
+    panel.querySelector("#gradient-angle").addEventListener("input", (e) => {
+      const a = parseInt(e.target.value,10);
+      const c1 = panel.querySelector("#color1").value;
+      const c2 = panel.querySelector("#color2").value;
+      const g = `linear-gradient(${a}deg, ${c1}, ${c2})`;
+      const cfg = getConfig(); cfg.gradient = g; cfg.gradientAngle = a; cfg.gradientColor1 = c1; cfg.gradientColor2 = c2; saveConfig(cfg); applyGradient(g,a,c1,c2);
+    });
+
+    ["#color1","#color2"].forEach(sel => {
+      panel.querySelector(sel).addEventListener("input", () => {
+        const a = parseInt(panel.querySelector("#gradient-angle").value,10);
+        const c1 = panel.querySelector("#color1").value;
+        const c2 = panel.querySelector("#color2").value;
+        panel.querySelector("#color1hex").value = c1;
+        panel.querySelector("#color2hex").value = c2;
+        const g = `linear-gradient(${a}deg, ${c1}, ${c2})`;
+        const cfg = getConfig(); cfg.gradient = g; cfg.gradientColor1 = c1; cfg.gradientColor2 = c2; saveConfig(cfg); applyGradient(g,a,c1,c2);
+      });
+    });
+
+    panel.querySelector("#color1hex").addEventListener("change", (e) => {
+      const v = e.target.value.trim();
+      if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v)) { panel.querySelector("#color1").value = v; panel.querySelector("#color1hex").value = v; panel.querySelector("#color1").dispatchEvent(new Event('input')); }
+    });
+    panel.querySelector("#color2hex").addEventListener("change", (e) => {
+      const v = e.target.value.trim();
+      if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v)) { panel.querySelector("#color2").value = v; panel.querySelector("#color2hex").value = v; panel.querySelector("#color2").dispatchEvent(new Event('input')); }
+    });
+
+    panel.querySelector("#gradient-input").addEventListener("input", (e) => {
+      const val = e.target.value.trim();
+      if (!val) return;
+      const m = val.match(/linear-gradient\((\d+)deg\s*,\s*(#[0-9a-f]{3,6}|rgba?\([^)]+\))\s*,\s*(#[0-9a-f]{3,6}|rgba?\([^)]+\))\)/i);
+      if (m) {
+        const ang = parseInt(m[1],10);
+        panel.querySelector("#gradient-angle").value = ang;
+        panel.querySelector("#color1").value = m[2];
+        panel.querySelector("#color2").value = m[3];
+        panel.querySelector("#color1hex").value = m[2];
+        panel.querySelector("#color2hex").value = m[3];
+        const cfg = getConfig(); cfg.gradient = val; cfg.gradientAngle = ang; cfg.gradientColor1 = m[2]; cfg.gradientColor2 = m[3]; saveConfig(cfg); applyGradient(val,ang,m[2],m[3]);
+      }
+    });
+
+    panel.querySelector("#gradient-copy").addEventListener("click", () => {
+      const v = panel.querySelector("#gradient-input").value.trim();
+      if (v) navigator.clipboard?.writeText(v);
+      panel.querySelector("#gradient-copy").textContent = "Copied!";
+      setTimeout(()=>panel.querySelector("#gradient-copy").textContent="Copy",1200);
+    });
+    panel.querySelector("#gradient-clear").addEventListener("click", () => {
+      panel.querySelector("#gradient-input").value=""; panel.querySelector("#gradient-angle").value=45; panel.querySelector("#color1").value="#3a3a3a"; panel.querySelector("#color2").value="#2b2a2a"; panel.querySelector("#color1hex").value="#3a3a3a"; panel.querySelector("#color2hex").value="#2b2a2a";
+      const c = getConfig(); c.gradient=null; saveConfig(c); applyGradient(null);
+    });
+
+    panel.querySelector("#glass-panels-toggle").addEventListener("change", () => { const c = getConfig(); c.glassPanels.enabled = panel.querySelector("#glass-panels-toggle").checked; saveConfig(c); applyGlassPanels(c); });
+    panel.querySelector("#glass-radius").addEventListener("input", () => { const c = getConfig(); c.glassPanels.radius = parseInt(panel.querySelector("#glass-radius").value)||8; saveConfig(c); applyGlassPanels(c); });
+    panel.querySelector("#glass-hue").addEventListener("input", () => { const v = parseInt(panel.querySelector("#glass-hue").value)||270; panel.querySelector("#glass-hue-value").textContent = v; const c = getConfig(); c.glassPanels.hue = v; saveConfig(c); applyGlassPanels(c); });
+    panel.querySelector("#glass-alpha").addEventListener("input", () => { const v = parseInt(panel.querySelector("#glass-alpha").value)||16; panel.querySelector("#glass-alpha-value").textContent = v; const c = getConfig(); c.glassPanels.alpha = v/100; saveConfig(c); applyGlassPanels(c); });
+
+    panel.querySelector("#online-styles-input").addEventListener("change", (e) => { const c = getConfig(); c.onlineStyles = e.target.value||""; saveConfig(c); loadOnlineCSS(c.onlineStyles); });
+    panel.querySelector("#custom-css-input").addEventListener("change", (e) => { const c = getConfig(); c.customCSS = e.target.value||""; saveConfig(c); applyCustomCSS(c.customCSS); });
+
+    ["disable-friendslist","blur-sensitive","blur-comments"].forEach(id=>{
+      const el = panel.querySelector("#"+id);
+      el.addEventListener("change", ()=> {
+        const c = getConfig();
+        c.disableFriendslist = panel.querySelector("#disable-friendslist").checked;
+        c.blurSensitive = panel.querySelector("#blur-sensitive").checked;
+        c.blurComments = panel.querySelector("#blur-comments").checked;
+        saveConfig(c); updatePrivacyStyles(c);
+      });
+    });
+
+    panel.querySelector("#main-font").addEventListener("change", (e)=> {
+      const val = e.target.value; const c = getConfig(); c.fontFamily = val; saveConfig(c);
+      if (val==="roboto") applyGlobalFont("'Roboto', system-ui, sans-serif");
+      else if (val==="comfortaa") { loadFont("https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;700&display=swap"); applyGlobalFont("'Comfortaa', system-ui, sans-serif"); }
+      else if (val==="online") { if (c.onlineFont) loadFont(c.onlineFont); }
+      else applyGlobalFont("system-ui, sans-serif");
+      panel.querySelector("#font-preview").style.fontFamily = getComputedStyle(document.body).fontFamily;
+    });
+    panel.querySelector("#online-font-url").addEventListener("change", (e)=> { const url = e.target.value.trim(); const c = getConfig(); c.onlineFont = url; saveConfig(c); if (url) loadFont(url); });
+
+    panel.querySelector("#exp-image-process").addEventListener("change", (e) => {
+      const c = getConfig(); c.experimentalImageProcessing = e.target.checked; saveConfig(c);
+      if (c.experimentalImageProcessing) { if (!window.__utilify_invisible_mo) window.__utilify_invisible_mo = enableImageBackgroundProcessing(); }
+      else { if (window.__utilify_invisible_mo) { try { window.__utilify_invisible_mo.disconnect(); } catch {} window.__utilify_invisible_mo = null; } }
+    });
+
+    panel.querySelector("#exp-appear-offline").addEventListener("change", (e) => {
+      const c = getConfig(); c.appearOffline = e.target.checked; saveConfig(c);
+      if (c.appearOffline) installPulseAndChatBlocker(); else uninstallPulseAndChatBlocker();
+    });
+
+    panel.querySelector("#check-update").addEventListener("click", () => checkForUpdatesUI(panel));
+  }
+
+  function waitForSelectors(selectors, timeout = 8000) {
+    const start = Date.now();
+    return new Promise((resolve) => {
+      function lookup() {
+        for (const s of selectors) {
+          const el = document.querySelector(s);
+          if (el) return resolve(el);
+        }
+        if (Date.now() - start > timeout) return resolve(null);
+      }
+      const initial = lookup(); if (initial) return;
+      const mo = new MutationObserver(() => {
+        const found = lookup();
+        if (found) { mo.disconnect(); return; }
+      });
+      mo.observe(document.documentElement || document.body, { childList: true, subtree: true });
+      setTimeout(() => { try { mo.disconnect(); } catch {} resolve(null); }, timeout);
+    });
+  }
+
+  function createSettingsButton() {
+    if (document.getElementById(SETTINGS_BUTTON_ID)) return document.getElementById(SETTINGS_BUTTON_ID);
+    const container = document.createElement("div");
+    container.id = SETTINGS_CONTAINER_ID;
+    container.style.display = "flex";
+    container.style.alignItems = "center";
+    container.style.marginRight = "8px";
+    container.style.zIndex = "1001";
+
+    const btn = document.createElement("button");
+    btn.id = SETTINGS_BUTTON_ID;
+    btn.setAttribute("aria-label","Open Utilify Settings");
+    btn.style.background = "transparent";
+    btn.style.border = "0";
+    btn.style.cursor = "pointer";
+    btn.style.padding = "6px";
+    btn.style.borderRadius = "6px";
+    btn.style.display = "flex";
+    btn.style.alignItems = "center";
+    btn.style.justifyContent = "center";
+    btn.style.color = "#fff";
+    btn.innerHTML = `<svg viewBox="0 0 512 512" height="18" width="18" fill="currentColor" aria-hidden="true"><path d="M487.4 315.7l-42.6-24.6c4.3-23.2 4.3-47 0-70.2l42.6-24.6c4.9-2.8 7.1-8.6 5.5-14-11.1-35.6-30-67.8-54.7-94.6-3.8-4.1-10-5.1-14.8-2.3L380.8 110c-17.9-15.4-38.5-27.3-60.8-35.1V25.8c0-5.6-3.9-10.5-9.4-11.7-36.7-8.2-74.3-7.8-109.2 0-5.5 1.2-9.4 6.1-9.4 11.7V75c-22.2 7.9-42.8 19.8-60.8 35.1L88.7 85.5c-4.9-2.8-11-1.9-14.8 2.3-24.7 26.7-43.6 58.9-54.7 94.6-1.7 5.4.6 11.2 5.5 14L67.3 221c-4.3 23.2-4.3 47 0 70.2l-42.6 24.6c-4.9 2.8-7.1 8.6-5.5 14 11.1 35.6 30 67.8 54.7 94.6 3.8 4.1 10 5.1 14.8 2.3l42.6-24.6c17.9 15.4 38.5 27.3 60.8 35.1v49.2c0 5.6 3.9 10.5 9.4 11.7 36.7 8.2 74.3 7.8 109.2 0 5.5-1.2 9.4-6.1 9.4-11.7v-49.2c22.2-7.9 42.8-19.8 60.8-35.1l42.6 24.6c4.9 2.8 11 1.9 14.8-2.3 24.7-26.7 43.6-58.9 54.7-94.6 1.5-5.5-.7-11.3-5.6-14.1zM256 336c-44.1 0-80-35.9-80-80s35.9-80 80-80 80 35.9 80 80-35.9 80-80 80z"></path></svg>`;
+
+    container.appendChild(btn);
+
+    const selectors = [
+      "li._3WhKY",
+      "ul[role='menu'] li",
+      "nav",
+      "header",
+      "body"
+    ];
+
+    function attemptInsertToTarget(target) {
+      try {
+        if (!target || !target.parentNode) return false;
+        target.parentNode.insertBefore(container, target);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    for (const sel of selectors) {
+      const t = document.querySelector(sel);
+      if (t && attemptInsertToTarget(t)) return btn;
+    }
+
+    const mo = new MutationObserver((mutations, obs) => {
+      for (const sel of selectors) {
+        const t = document.querySelector(sel);
+        if (t && attemptInsertToTarget(t)) { obs.disconnect(); return; }
+      }
+    });
+    mo.observe(document.documentElement || document.body, { childList: true, subtree: true });
+
+    return btn;
+  }
+
+  function fetchWithTimeout(url, timeout = 9000) {
+    const ctrl = new AbortController();
+    const id = setTimeout(() => ctrl.abort(), timeout);
+    return fetch(url, { signal: ctrl.signal }).then(r => { clearTimeout(id); return r.text(); }).finally(()=>clearTimeout(id));
+  }
+
+  function compareSemver(a, b) {
+    if (!a || !b) return 0;
+    const pa = a.split(".").map(n => parseInt(n,10) || 0);
+    const pb = b.split(".").map(n => parseInt(n,10) || 0);
+    const len = Math.max(pa.length, pb.length);
+    for (let i=0;i<len;i++){
+      const na = pa[i] || 0;
+      const nb = pb[i] || 0;
+      if (na > nb) return 1;
+      if (na < nb) return -1;
+    }
+    return 0;
+  }
+
+  async function checkForUpdatesUI(panel) {
+    const status = panel.querySelector("#update-status");
+    const info = panel.querySelector("#update-info");
+    status.textContent = "";
+    info.textContent = "Checking…";
+    try {
+      const raw = await fetchWithTimeout(UPDATE_RAW_URL, 9000);
+      const m = raw.match(/@version\s+([^\s]+)/);
+      const remote = m ? m[1].trim() : null;
+      const installed = getInstalledVersion();
+      if (!remote) { status.textContent=""; info.textContent="Could not read remote version."; return; }
+      const cmp = compareSemver(remote, installed);
+      if (cmp > 0) {
+        status.className = "status-badge update-available";
+        status.textContent = "Update";
+        info.innerHTML = `Remote release ${remote} detected. Installed ${installed}.`;
+        const repoLink = document.createElement("a");
+        repoLink.href = UPDATE_REPO_URL;
+        repoLink.target = "_blank";
+        repoLink.rel = "noopener";
+        repoLink.textContent = "Open repository";
+        info.appendChild(document.createTextNode(" "));
+        info.appendChild(repoLink);
+      } else if (cmp === 0) {
+        status.className = "status-badge update-ok";
+        status.textContent = "Up to date";
+        info.textContent = `Installed ${installed} is current.`;
+      } else {
+        status.className = "status-badge update-ok";
+        status.textContent = "Local newer";
+        info.textContent = `Installed ${installed} appears newer than remote ${remote}.`;
+      }
+    } catch {
+      info.textContent = "Update check failed.";
+    }
+  }
+
+  function centerAndClampPixel(panel) {
+    const rect = panel.getBoundingClientRect();
+    const desiredLeft = Math.round((window.innerWidth - rect.width) / 2);
+    const desiredTop = Math.round((window.innerHeight - rect.height) / 2);
+    const clamped = clampPosition(desiredLeft, desiredTop, rect.width, rect.height);
+    panel.style.left = clamped.left + "px";
+    panel.style.top = clamped.top + "px";
+    panel.style.transform = "";
+  }
+
+  function initialize() {
+    ensureStyle();
+    const settingsBtn = createSettingsButton();
+    const panel = createPanel();
+    enableDrag(panel);
+    setupTabs(panel);
+    applyConfigToUI(panel, getConfig());
+    wirePanel(panel);
+
+    panel.querySelector(".close").addEventListener("click", () => panel.classList.remove("visible"));
+
+    settingsBtn.addEventListener("click", () => {
+      const visible = panel.classList.toggle("visible");
+      if (visible) {
+        const cfg = getConfig();
+        applyConfigToUI(panel, cfg);
+        applyAll(cfg);
+        panel.style.transform = "translate(-50%,-50%)";
+        panel.style.left = "50%";
+        panel.style.top = "50%";
+        requestAnimationFrame(() => centerAndClampPixel(panel));
+        panel.setAttribute("tabindex","-1");
+        panel.focus();
+        const badge = panel.querySelector("#version_badge");
+        if (badge) badge.textContent = "v" + getInstalledVersion();
+      } else {
+      }
+    });
+
+    const cfg = getConfig();
+    applyAll(cfg);
+    if (cfg.openOnLoad) {
+      setTimeout(()=> {
+        try { settingsBtn.click(); } catch { settingsBtn.dispatchEvent(new Event("click")); }
+      }, 50);
+    }
+  }
+
+  if (document.readyState === "complete" || document.readyState === "interactive") initialize();
+  else window.addEventListener("load", initialize);
+
 })();
 
-// Faster Friends V2
+
+// AVATAR FINDER CURRENTLY UNAVAILABLE :(
+
+// Faster Friends V3
 (function () {
   "use strict";
 
@@ -3034,4 +2395,12 @@ const createSnowEffect = (e) => {
 
   run();
 })();
+
+// Extra CSS: Useless Footers begone, small fixes & improvements.
+
+
+GM_addStyle(`
+._1RMYS { display: none !important; }
+`);
+
 
