@@ -37,6 +37,8 @@ The table below outlines features within the script that may violate the above g
 * **C) WebGL Fix:** SVG Button to add settings no longer displays and attaches to WebGL windows.
 * **D) Proper Credits:** Decided to finally creater proper Credits, kinda.
 
+> <img width="1735" height="1052" alt="{40022F24-8752-4BAD-A685-2B133E122A20}" src="https://github.com/user-attachments/assets/d242e11b-5fef-404c-a56a-aaf592823dba" />
+
 ***
 
 ## 📦 About Utilify (Rewrite)
