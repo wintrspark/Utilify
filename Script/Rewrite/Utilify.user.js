@@ -2782,6 +2782,7 @@ GM_addStyle(`
       background-size: 400% 100%;
       font-weight: bold;
       }
+      ._2hUvr ._1T9vj { background-color: hsla(0, 0%, 0.8%, 0.52) !important; }
       .css-bho9d5 {     color: rgba(0, 0, 0, 0.1) !important; }
       .css-bho9d5 svg {
     fill: #fff !important;
