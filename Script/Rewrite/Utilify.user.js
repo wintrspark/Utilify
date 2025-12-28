@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UtilifyV2
 // @namespace    wee woo wee woo
-// @version      2.0.9
+// @version      2.1.0
 // @description  Slowly rewriting this addon because I want to feel useful.
 // @author       S ( wintrspark )
 // @match        *://www.kogama.com/*
@@ -18,131 +18,235 @@
 // @run-at       document-start
 // ==/UserScript==
 
-(() => { // Paste Always Enabled + Obfuscate Dots (Toggle) within pasted content (mainly for URLs)
-  'use strict';
+(() => {
+  "use strict";
 
-  const WHITELISTED_DOMAINS = [ //will never obfuscate dots in those urls:
-    'youtube.com',
-    'youtu.be',
-  ];
+  const STATE = { query: "" };
 
-  const URL_REGEX = /(?:https?:\/\/)?(?:www\.)?([\w.-]+(?:\.[\w.-]+)+)(?:\/[\w-./?%=&]*)?/gi;
+  const SEL = {
+    toolbar: "div._6cutH",
+    listRoot: "div._1Yhgq",
+    item: "div._1lvYU",
+    name: "div._3zDi-"
+  };
 
-  function isWhitelisted(domain) {
-    domain = domain.toLowerCase();
-    return WHITELISTED_DOMAINS.some(whitelisted =>
-      domain === whitelisted ||
-      domain.endsWith('.' + whitelisted)
-    );
-  }
-
-  function obfuscateDotsInUrls(text, enabled = true) {
-    if (!enabled) return text;
-    return text.replace(URL_REGEX, (fullMatch, domain) => {
-      if (isWhitelisted(domain)) return fullMatch;
-      return fullMatch.replace(/\./g, '%2E');
+  const applyFilter = () => {
+    const q = STATE.query;
+    document.querySelectorAll(SEL.item).forEach(item => {
+      const name =
+        item.querySelector(SEL.name)?.textContent.toLowerCase() ?? "";
+      const visible = name.includes(q);
+      item.hidden = !visible;
+      item.style.opacity = visible ? "1" : "0";
+      item.style.transform = visible ? "translateY(0)" : "translateY(-4px)";
+      item.style.transition = "opacity 160ms ease, transform 160ms ease";
+      item.style.pointerEvents = visible ? "auto" : "none";
     });
-  }
+  };
 
-  function handlePaste(e) {
-    e.preventDefault();
-    const text = (e.clipboardData || window.clipboardData).getData('text');
-    document.execCommand('insertText', false, text);
-  }
+  const injectSearchBar = toolbar => {
+    if (toolbar.querySelector("#kogama-friend-filter")) return;
 
-  function handleInput(e) {
-    const target = e.target;
-    if (target._disableObfuscation) return;
+    const input = document.createElement("input");
+    input.id = "kogama-friend-filter";
+    input.type = "search";
+    input.placeholder = "Filter friends";
 
-    if (e.inputType !== 'insertText' || !e.data) return;
-
-    const start = target.selectionStart;
-    const end = target.selectionEnd;
-    const newValue = obfuscateDotsInUrls(target.value, !target._disableObfuscation);
-
-    if (newValue !== target.value) {
-      const beforeSelection = target.value.substring(0, start);
-      const afterChanges = obfuscateDotsInUrls(beforeSelection, !target._disableObfuscation);
-      const cursorOffset = afterChanges.length - beforeSelection.length;
-
-      target.value = newValue;
-      target.setSelectionRange(start + cursorOffset, end + cursorOffset);
-    }
-  }
-
-  function isTextInput(el) {
-    if (el.tagName === 'TEXTAREA') return true;
-    if (el.tagName !== 'INPUT') return false;
-    return ['text', 'search', 'url', 'email', 'tel', 'password'].includes(el.type);
-  }
-
-  function createToggleButton(input) {
-    if (!isTextInput(input) || input._hasObfuscationButton) return;
-    input._hasObfuscationButton = true;
-
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.textContent = '⚡';
-    input._disableObfuscation = false; // ON by default
-
-    Object.assign(btn.style, {
-      marginLeft: '4px',
-      cursor: 'pointer',
-      fontSize: '0.85em',
-      transition: 'opacity 0.25s ease',
-      opacity: '1'
+    Object.assign(input.style, {
+      marginLeft: "12px",
+      padding: "6px 10px",
+      height: "32px",
+      minWidth: "180px",
+      borderRadius: "10px",
+      border: "1px solid rgba(255,255,255,0.15)",
+      background: "rgba(255,255,255,0.08)",
+      backdropFilter: "blur(10px)",
+      WebkitBackdropFilter: "blur(10px)",
+      color: "#fff",
+      fontSize: "13px",
+      outline: "none",
+      transition: "background 180ms ease, box-shadow 180ms ease"
     });
 
-    btn.addEventListener('click', () => {
-      input._disableObfuscation = !input._disableObfuscation;
-      btn.style.opacity = input._disableObfuscation ? '0.5' : '1';
+    input.addEventListener("focus", () => {
+      input.style.background = "rgba(255,255,255,0.12)";
+      input.style.boxShadow = "0 0 0 1px rgba(255,255,255,0.25)";
     });
 
-    input.insertAdjacentElement('afterend', btn);
-  }
-
-  // Observe new nodes for dynamic fields
-  const observer = new MutationObserver(muts => {
-    muts.forEach(m => {
-      m.addedNodes.forEach(node => {
-        if (!(node instanceof HTMLElement)) return;
-
-        if (isTextInput(node)) {
-          createToggleButton(node);
-          node.value = obfuscateDotsInUrls(node.value);
-        }
-
-        node.querySelectorAll && node.querySelectorAll('input, textarea').forEach(el => {
-          if (isTextInput(el)) {
-            createToggleButton(el);
-            el.value = obfuscateDotsInUrls(el.value);
-          }
-        });
-      });
+    input.addEventListener("blur", () => {
+      input.style.background = "rgba(255,255,255,0.08)";
+      input.style.boxShadow = "none";
     });
-  });
 
-  observer.observe(document.body, { childList: true, subtree: true });
+    input.addEventListener("input", e => {
+      STATE.query = e.target.value.trim().toLowerCase();
+      applyFilter();
+    });
 
-  document.addEventListener('paste', handlePaste, true);
-  document.addEventListener('input', handleInput, true);
+    toolbar.appendChild(input);
+  };
 
-  document.querySelectorAll('input, textarea').forEach(el => {
-    if (isTextInput(el)) {
-      createToggleButton(el);
-      el.value = obfuscateDotsInUrls(el.value);
-    }
+  const observeFriendsList = root => {
+    if (root.__filterObserver) return;
+    root.__filterObserver = true;
+
+    new MutationObserver(applyFilter).observe(root, {
+      childList: true,
+      subtree: true
+    });
+  };
+
+  const observeToolbar = parent => {
+    new MutationObserver(() => {
+      const toolbar = parent.querySelector(SEL.toolbar);
+      if (!toolbar) return;
+      injectSearchBar(toolbar);
+    }).observe(parent, { childList: true, subtree: true });
+  };
+
+  const bootstrap = () => {
+    const listRoot = document.querySelector(SEL.listRoot);
+    if (!listRoot) return;
+
+    observeFriendsList(listRoot);
+    observeToolbar(listRoot.parentElement);
+    applyFilter();
+  };
+
+  new MutationObserver(bootstrap).observe(document.documentElement, {
+    childList: true,
+    subtree: true
   });
 })();
 
+(() => {
+  'use strict';
+
+  const WHITELISTED_DOMAINS = ['youtube.com', 'youtu.be'];
+  const URL_REGEX = /(?:https?:\/\/)?(?:www\.)?([\w.-]+(?:\.[\w.-]+)+)(?:\/[\w-./?%=&]*)?/gi;
+
+  const STYLE = `
+.obf-wrap{position:relative;display:inline-block;width:100%}
+.obf-btn{
+  position:absolute;
+  right:6px;
+  top:50%;
+  transform:translateY(-50%);
+  width:22px;
+  height:22px;
+  border-radius:6px;
+  background:#111;
+  border:1px solid #2a2a2a;
+  color:#bdbdbd;
+  font-size:12px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:background .15s,color .15s,opacity .15s;
+}
+.obf-btn:hover{background:#1a1a1a;color:#fff}
+.obf-btn[data-off="1"]{opacity:.4}
+`;
+
+  const styleEl = document.createElement('style');
+  styleEl.textContent = STYLE;
+  document.head.appendChild(styleEl);
+
+  const isTextInput = el =>
+    el &&
+    (el.tagName === 'TEXTAREA' ||
+      (el.tagName === 'INPUT' &&
+        ['text','search','url','email','tel','password'].includes(el.type)));
+
+  const isWhitelisted = d =>
+    WHITELISTED_DOMAINS.some(w => d === w || d.endsWith('.' + w));
+
+  const obfuscate = (text, enabled) =>
+    enabled
+      ? text.replace(URL_REGEX, (m, d) =>
+          isWhitelisted(d) ? m : m.replace(/\./g, '%2E'))
+      : text;
+
+  const enhanceInput = input => {
+    if (!isTextInput(input) || input.dataset.obfInit) return;
+    input.dataset.obfInit = '1';
+    input._disableObfuscation = false;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'obf-wrap';
+    input.parentNode.insertBefore(wrap, input);
+    wrap.appendChild(input);
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'obf-btn';
+    btn.textContent = '⚡';
+    wrap.appendChild(btn);
+
+    const pr = parseInt(getComputedStyle(input).paddingRight || 0, 10);
+    input.style.paddingRight = pr + 26 + 'px';
+
+    btn.onclick = () => {
+      input._disableObfuscation = !input._disableObfuscation;
+      btn.dataset.off = input._disableObfuscation ? '1' : '0';
+    };
+
+    input.value = obfuscate(input.value, true);
+  };
+
+  document.addEventListener('input', e => {
+    const t = e.target;
+    if (!isTextInput(t) || t._disableObfuscation) return;
+    if (e.inputType !== 'insertText' || !e.data) return;
+    const s = t.selectionStart;
+    const v = obfuscate(t.value, true);
+    if (v !== t.value) {
+      t.value = v;
+      t.setSelectionRange(s, s);
+    }
+  }, true);
+
+  document.addEventListener('paste', e => {
+    if (!isTextInput(e.target)) return;
+    e.preventDefault();
+    const t = (e.clipboardData || window.clipboardData).getData('text');
+    document.execCommand('insertText', false, t);
+  }, true);
+
+  const scan = root =>
+    root.querySelectorAll?.('input,textarea').forEach(enhanceInput);
+
+  scan(document);
+
+  new MutationObserver(m =>
+    m.forEach(r =>
+      r.addedNodes.forEach(n => {
+        if (n instanceof HTMLElement) {
+          enhanceInput(n);
+          scan(n);
+        }
+      })
+    )
+  ).observe(document.body, { childList: true, subtree: true });
+})();
+
+
 (async function() {
     "use strict";
+
     const SNOWFLAKE_SVGS = [
         "data:image/svg+xml," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path fill="white" d="M50,10 L55,45 L50,50 L45,45 Z M50,90 L55,55 L50,50 L45,55 Z M10,50 L45,55 L50,50 L45,45 Z M90,50 L55,55 L50,50 L55,45 Z M25,25 L45,45 L50,40 L40,30 Z M75,75 L55,55 L50,60 L60,70 Z M75,25 L55,45 L60,50 L70,40 Z M25,75 L45,55 L40,50 L30,60 Z"/><circle cx="50" cy="50" r="8" fill="white"/></svg>`),
-        "data:image/svg+xml," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><g fill="white"><rect x="47" y="5" width="6" height="90" rx="2"/><rect x="5" y="47" width="90" height="6" rx="2"/><rect x="47" y="5" width="6" height="90" rx="2" transform="rotate(45 50 50)"/><rect x="47" y="5" width="6" height="90" rx="2" transform="rotate(-45 50 50)"/><circle cx="50" cy="50" r="10" fill="white"/></g></svg>`)
+        "data:image/svg+xml," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><g fill="white"><rect x="47" y="5" width="6" height="90" rx="2"/><rect x="5" y="47" width="90" height="6" rx="2"/><rect x="47" y="5" width="6" height="90" rx="2" transform="rotate(45 50 50)"/><rect x="47" y="5" width="6" height="90" rx="2" transform="rotate(-45 50 50)"/><circle cx="50" cy="50" r="10"/></g></svg>`)
     ];
 
-    const AVAILABLE_FILTERS = ["rain", "snow", "fireflies", "blur"];
+    const ROSE_SVG = "data:image/svg+xml," + encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+            <path fill="#b3001b" d="M50 15c-15 0-25 10-25 22 0 10 7 18 17 20-4 6-6 10-6 15 0 7 6 13 14 13s14-6 14-13c0-5-2-9-6-15 10-2 17-10 17-20 0-12-10-22-25-22z"/>
+        </svg>
+    `);
+
+    const AVAILABLE_FILTERS = ["rain", "snow", "fireflies", "roses", "ivy", "blur"];
 
     const waitForElement = async (sel, timeout = 10000) => {
         const start = Date.now();
@@ -159,24 +263,38 @@
         if (tooltip) return;
         tooltip = document.createElement("div");
         Object.assign(tooltip.style, {
-            position: "fixed", zIndex: "10000", background: "rgba(20, 20, 20, 0.95)", color: "#fff",
-            padding: "10px 14px", borderRadius: "8px", border: "1px solid #555",
-            fontSize: "12px", boxShadow: "0 8px 24px rgba(0,0,0,0.6)", pointerEvents: "none",
-            transition: "opacity 0.2s", backdropFilter: "blur(5px)", fontFamily: "sans-serif"
+            position: "fixed",
+            zIndex: "10000",
+            background: "rgba(20,20,20,0.95)",
+            color: "#fff",
+            padding: "10px 14px",
+            borderRadius: "8px",
+            border: "1px solid #555",
+            fontSize: "12px",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.6)",
+            pointerEvents: "none",
+            transition: "opacity 0.2s",
+            backdropFilter: "blur(5px)",
+            fontFamily: "sans-serif"
         });
-        tooltip.innerHTML = `<strong style="color: #00e5ff;">Available Effects:</strong><br>${AVAILABLE_FILTERS.join(", ")}`;
+        tooltip.innerHTML = `<strong style="color:#00e5ff;">Available Effects:</strong><br>${AVAILABLE_FILTERS.join(", ")}`;
         document.body.appendChild(tooltip);
         updateTooltipPos(target);
     }
 
     function updateTooltipPos(target) {
         if (!tooltip) return;
-        const rect = target.getBoundingClientRect();
-        tooltip.style.left = `${rect.left}px`;
-        tooltip.style.top = `${rect.top - 55}px`;
+        const r = target.getBoundingClientRect();
+        tooltip.style.left = r.left + "px";
+        tooltip.style.top = (r.top - 55) + "px";
     }
 
-    function removeTooltip() { if(tooltip) { tooltip.remove(); tooltip = null; } }
+    function removeTooltip() {
+        if (tooltip) {
+            tooltip.remove();
+            tooltip = null;
+        }
+    }
 
     class ParticleSystem {
         constructor(targetEl) {
@@ -185,81 +303,113 @@
             this.ctx = this.canvas.getContext("2d", { alpha: true });
             this.dpr = window.devicePixelRatio || 1;
             this.particles = [];
-
             this.container = document.createElement("div");
             Object.assign(this.container.style, {
-                position: "absolute", pointerEvents: "none", zIndex: "9999", overflow: "hidden"
+                position: "absolute",
+                pointerEvents: "none",
+                zIndex: "9",
+                overflow: "hidden"
             });
-
             this.canvas.style.width = "100%";
             this.canvas.style.height = "100%";
             this.container.appendChild(this.canvas);
-
             document.body.appendChild(this.container);
-
             this.observer = new ResizeObserver(() => this.resize());
             this.observer.observe(this.target);
-
             this.loop = this.loop.bind(this);
         }
 
         resize() {
             const r = this.target.getBoundingClientRect();
-            this.container.style.top = r.top + window.scrollY + "px";
-            this.container.style.left = r.left + window.scrollX + "px";
+            this.container.style.top = r.top + scrollY + "px";
+            this.container.style.left = r.left + scrollX + "px";
             this.container.style.width = r.width + "px";
             this.container.style.height = r.height + "px";
-
-            this.w = r.width; this.h = r.height;
+            this.w = r.width;
+            this.h = r.height;
             this.canvas.width = this.w * this.dpr;
             this.canvas.height = this.h * this.dpr;
-            this.ctx.scale(this.dpr, this.dpr);
+            this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
         }
 
         start() {
             this.resize();
             this.initParticles();
-            this.rafId = requestAnimationFrame(this.loop);
-            window.addEventListener("scroll", () => this.resize());
+            requestAnimationFrame(this.loop);
+            addEventListener("scroll", () => this.resize());
         }
 
         loop() {
             if (!document.contains(this.container)) return;
             this.ctx.clearRect(0, 0, this.w, this.h);
             this.updateAndDraw();
-            this.rafId = requestAnimationFrame(this.loop);
+            requestAnimationFrame(this.loop);
         }
     }
 
     class RainSystem extends ParticleSystem {
-        initParticles() { for (let i = 0; i < 50; i++) this.particles.push(this.reset({})); }
-        reset(p) { p.x = Math.random() * this.w; p.y = Math.random() * -this.h; p.z = Math.random() * 0.5 + 0.5; p.len = Math.random() * 15 + 10; p.vy = (Math.random() * 6 + 10) * p.z; return p; }
+        initParticles() {
+            for (let i = 0; i < 50; i++) this.particles.push(this.reset({}));
+        }
+        reset(p) {
+            p.x = Math.random() * this.w;
+            p.y = Math.random() * -this.h;
+            p.z = Math.random() * 0.5 + 0.5;
+            p.len = Math.random() * 15 + 10;
+            p.vy = (Math.random() * 6 + 10) * p.z;
+            return p;
+        }
         updateAndDraw() {
-            this.ctx.lineWidth = 1.2; this.ctx.lineCap = "round"; this.ctx.strokeStyle = "rgba(255,255,255,0.35)";
+            this.ctx.lineWidth = 1.2;
+            this.ctx.lineCap = "round";
+            this.ctx.strokeStyle = "rgba(255,255,255,0.35)";
             this.ctx.beginPath();
-            for (let p of this.particles) {
-                p.y += p.vy; if (p.y > this.h + p.len) this.reset(p);
-                this.ctx.moveTo(p.x, p.y); this.ctx.lineTo(p.x, p.y + p.len * p.z);
+            for (const p of this.particles) {
+                p.y += p.vy;
+                if (p.y > this.h + p.len) this.reset(p);
+                this.ctx.moveTo(p.x, p.y);
+                this.ctx.lineTo(p.x, p.y + p.len * p.z);
             }
             this.ctx.stroke();
         }
     }
 
     class SnowSystem extends ParticleSystem {
-        constructor(target) { super(target); this.imgs = SNOWFLAKE_SVGS.map(src => { const i = new Image(); i.src = src; return i; }); this.start(); }
-        initParticles() { for (let i = 0; i < 400; i++) this.particles.push(this.reset({})); }
+        constructor(target) {
+            super(target);
+            this.imgs = SNOWFLAKE_SVGS.map(s => {
+                const i = new Image();
+                i.src = s;
+                return i;
+            });
+            this.start();
+        }
+        initParticles() {
+            for (let i = 0; i < 400; i++) this.particles.push(this.reset({}));
+        }
         reset(p) {
-            p.x = Math.random() * this.w; p.y = Math.random() * -this.h; p.z = Math.random() * 0.5 + 0.5;
-            p.size = (Math.random() * 12 + 10) * p.z; p.vy = (Math.random() * 0.7 + 0.4) * p.z;
-            p.sway = Math.random() * 0.06; p.swayOff = Math.random() * 6; p.rot = Math.random() * 360;
+            p.x = Math.random() * this.w;
+            p.y = Math.random() * -this.h;
+            p.z = Math.random() * 0.5 + 0.5;
+            p.size = (Math.random() * 12 + 10) * p.z;
+            p.vy = (Math.random() * 0.7 + 0.4) * p.z;
+            p.sway = Math.random() * 0.06;
+            p.swayOff = Math.random() * 6;
+            p.rot = Math.random() * 360;
             p.img = this.imgs[Math.floor(Math.random() * this.imgs.length)];
-            p.alpha = 0.5; return p;
+            p.alpha = 0.5;
+            return p;
         }
         updateAndDraw() {
-            for (let p of this.particles) {
-                p.y += p.vy; p.swayOff += p.sway; p.x += Math.sin(p.swayOff) * 0.5; p.rot += 0.4;
+            for (const p of this.particles) {
+                p.y += p.vy;
+                p.swayOff += p.sway;
+                p.x += Math.sin(p.swayOff) * 0.5;
+                p.rot += 0.4;
                 if (p.y > this.h + 20) this.reset(p);
-                this.ctx.save(); this.ctx.translate(p.x, p.y); this.ctx.rotate(p.rot * Math.PI / 180);
+                this.ctx.save();
+                this.ctx.translate(p.x, p.y);
+                this.ctx.rotate(p.rot * Math.PI / 180);
                 this.ctx.globalAlpha = p.alpha;
                 if (p.img.complete) this.ctx.drawImage(p.img, -p.size/2, -p.size/2, p.size, p.size);
                 this.ctx.restore();
@@ -268,10 +418,93 @@
     }
 
     class FireflySystem extends ParticleSystem {
-        constructor(target) { super(target); this.start(); }
-        initParticles() { for (let i = 0; i < 20; i++) this.particles.push(this.reset({})); }
-        reset(p) { p.x = Math.random()*this.w; p.y = Math.random()*this.h; p.size = Math.random()*2+1; p.vx=(Math.random()-0.5)*0.4; p.vy=(Math.random()-0.5)*0.4; p.alpha=Math.random(); return p; }
-        updateAndDraw() { for (let p of this.particles) { p.x+=p.vx; p.y+=p.vy; p.alpha+=(Math.random()-0.5)*0.05; if(p.x>this.w)p.x=0;if(p.y>this.h)p.y=0;if(p.alpha>0.8)p.alpha=0.8;if(p.alpha<0.2)p.alpha=0.2; this.ctx.fillStyle=`rgba(255,255,150,${p.alpha})`; this.ctx.shadowBlur=5; this.ctx.shadowColor="yellow"; this.ctx.beginPath(); this.ctx.arc(p.x,p.y,p.size,0,Math.PI*2); this.ctx.fill(); } }
+        constructor(target) {
+            super(target);
+            this.start();
+        }
+        initParticles() {
+            for (let i = 0; i < 60; i++) this.particles.push(this.reset({}));
+        }
+        reset(p) {
+            p.x = Math.random() * this.w;
+            p.y = Math.random() * this.h;
+            p.vx = (Math.random() - 0.5) * 0.6;
+            p.vy = (Math.random() - 0.5) * 0.6;
+            p.phase = Math.random() * Math.PI * 2;
+            p.size = Math.random() * 1.8 + 1.2;
+            return p;
+        }
+        updateAndDraw() {
+            for (const p of this.particles) {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.phase += 0.06;
+                if (p.x < 0 || p.x > this.w) p.vx *= -1;
+                if (p.y < 0 || p.y > this.h) p.vy *= -1;
+                const g = (Math.sin(p.phase) + 1) / 2;
+                this.ctx.shadowBlur = 18 * g;
+                this.ctx.shadowColor = "rgba(255,255,160,1)";
+                this.ctx.fillStyle = `rgba(255,255,180,${0.35 + g * 0.6})`;
+                this.ctx.beginPath();
+                this.ctx.arc(p.x, p.y, p.size + g * 1.5, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+        }
+    }
+
+    class RoseSystem extends ParticleSystem {
+        constructor(target) {
+            super(target);
+            this.img = new Image();
+            this.img.src = ROSE_SVG;
+            this.start();
+        }
+        initParticles() {
+            for (let i = 0; i < 45; i++) this.particles.push(this.reset({}));
+        }
+        reset(p) {
+            p.x = Math.random() * this.w;
+            p.y = Math.random() * -this.h;
+            p.vy = Math.random() * 0.6 + 0.4;
+            p.vx = Math.sin(Math.random() * Math.PI * 2) * 0.4;
+            p.rot = Math.random() * 360;
+            p.size = Math.random() * 14 + 12;
+            return p;
+        }
+        updateAndDraw() {
+            for (const p of this.particles) {
+                p.y += p.vy;
+                p.x += p.vx;
+                p.rot += 0.3;
+                if (p.y > this.h + 30) this.reset(p);
+                this.ctx.save();
+                this.ctx.translate(p.x, p.y);
+                this.ctx.rotate(p.rot * Math.PI / 180);
+                this.ctx.drawImage(this.img, -p.size/2, -p.size/2, p.size, p.size);
+                this.ctx.restore();
+            }
+        }
+    }
+
+    function applyIvy(target) {
+        const ivy = document.createElement("div");
+        ivy.innerHTML = `<svg viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,20 C20,10 40,30 60,20 80,10 100,25 100,25" stroke="#2f6b3c" stroke-width="2" fill="none"/><path d="M0,80 C25,70 50,90 75,80 90,75 100,85 100,85" stroke="#2f6b3c" stroke-width="2" fill="none"/></svg>`;
+        Object.assign(ivy.style, {
+            position: "absolute",
+            pointerEvents: "none",
+            opacity: "0.9",
+            zIndex: "10000",
+            animation: "ivySway 6s ease-in-out infinite alternate"
+        });
+        const s = document.createElement("style");
+        s.textContent = `@keyframes ivySway{from{transform:rotate(-0.3deg)}to{transform:rotate(0.3deg)}}`;
+        document.head.appendChild(s);
+        document.body.appendChild(ivy);
+        const r = target.getBoundingClientRect();
+        ivy.style.top = r.top + scrollY + "px";
+        ivy.style.left = r.left + scrollX + "px";
+        ivy.style.width = r.width + "px";
+        ivy.style.height = r.height + "px";
     }
 
     async function fetchImage(id) {
@@ -280,54 +513,72 @@
             const h = await r.text();
             const j = JSON.parse(h.match(/options\.bootstrap\s*=\s*({.*?});/s)[1]);
             return j.object?.images?.large || Object.values(j.object?.images || {})[0] || "";
-        } catch { return ""; }
+        } catch {
+            return "";
+        }
+    }
+
+    async function fetchImgur(id) {
+        for (const ext of ["png", "jpg", "gif"]) {
+            const url = `https://i.imgur.com/${id}.${ext}`;
+            try {
+                const r = await fetch(url, { method: "HEAD" });
+                if (r.ok) return url;
+            } catch {}
+        }
+        return "";
     }
 
     async function applyEffects() {
         try {
-            const d = await waitForElement('div._1aUa_');
-            const m = /(?:\|\|)?Background:\s*(\d+)(?:,\s*filter:\s*([a-z, ]+))?;?(?:\|\|)?/i.exec(d.textContent || "");
+            const d = await waitForElement("div._1aUa_");
+            const m = /(?:\|\|)?Background:\s*(?:i-([a-zA-Z0-9]+)|(\d+))(?:,\s*filter:\s*([a-z, ]+))?/i.exec(d.textContent || "");
             if (!m) return;
-
-            const img = await fetchImage(m[1]);
-            const b = document.querySelector('._33DXe');
+            const img = m[1] ? await fetchImgur(m[1]) : await fetchImage(m[2]);
+            const b = document.querySelector("._33DXe");
             if (!b || !img) return;
-
-            b.style.transition = 'opacity 0.28s ease-in';
-            b.style.opacity = '0.9';
+            b.style.transition = "opacity 0.28s ease-in";
+            b.style.opacity = "0.9";
             b.style.backgroundImage = `url("${img}")`;
-            b.style.backgroundSize = 'cover';
-            b.style.backgroundPosition = 'center';
-            b.style.backgroundRepeat = 'no-repeat';
-            b.style.position = 'absolute';
-            b.style.filter = 'blur(3px)';
-            b.style.zIndex = '1';
-            if (m[2]) {
-                m[2].split(',').map(s=>s.trim().toLowerCase()).forEach(f=>{
-                    if(f==="rain") new RainSystem(b).start();
-                    if(f==="snow") new SnowSystem(b);
-                    if(f==="fireflies") new FireflySystem(b);
+            b.style.backgroundSize = "cover";
+            b.style.backgroundPosition = "center";
+            b.style.backgroundRepeat = "no-repeat";
+            b.style.position = "absolute";
+            b.style.filter = "blur(3px)";
+            b.style.zIndex = "1";
+            if (m[3]) {
+                m[3].split(",").map(s => s.trim().toLowerCase()).forEach(f => {
+                    if (f === "rain") new RainSystem(b).start();
+                    if (f === "snow") new SnowSystem(b);
+                    if (f === "fireflies") new FireflySystem(b);
+                    if (f === "roses") new RoseSystem(b);
+                    if (f === "ivy") applyIvy(b);
                 });
             }
-        } catch (err) { console.error(err); }
+        } catch (e) {
+            console.error(e);
+        }
     }
+
     const inputObserver = new MutationObserver(() => {
-        const area = document.querySelector('textarea#description');
-        if(area && !area._monitored) {
+        const area = document.querySelector("textarea#description");
+        if (area && !area._monitored) {
             area._monitored = true;
-            area.addEventListener('input', (e) => {
-                if(e.target.value.toLowerCase().includes('filter:')) showTooltip(e.target);
+            area.addEventListener("input", e => {
+                if (e.target.value.toLowerCase().includes("filter:")) showTooltip(e.target);
                 else removeTooltip();
             });
-            area.addEventListener('blur', removeTooltip);
+            area.addEventListener("blur", removeTooltip);
         }
     });
+
     inputObserver.observe(document.body, { childList: true, subtree: true });
 
-    if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", applyEffects);
+    if (document.readyState === "loading") addEventListener("DOMContentLoaded", applyEffects);
     else applyEffects();
 
 })();
+
 
 (async () => { // Profile Banner & Gradient - Utilify Exclusive
   "use strict";
@@ -1243,7 +1494,7 @@ function teardownStreakKeeper() {
       if (!s) { s = document.createElement("style"); s.id = "utilifyv2_glass_style"; document.head.appendChild(s); }
       if (!cfg.glassPanels || !cfg.glassPanels.enabled) { s.textContent = ""; return; }
       const { radius, hue, alpha } = cfg.glassPanels;
-      s.textContent = `.css-wog98n, .css-o4yc28, .css-z05bui, .css-1udp1s3, .css-zslu1c, .css-1rbdj9p { background-color: hsla(${hue},68%,43%,${alpha}) !important; backdrop-filter: blur(3px) !important; border-radius: ${radius}px !important; }
+      s.textContent = `._3TORb ._2E1AL .tRx6U, .css-1wbcikz, .css-wog98n, .css-o4yc28, .css-z05bui, .css-1udp1s3, .css-zslu1c, .css-1rbdj9p { background-color: hsla(${hue},68%,43%,${alpha}) !important; backdrop-filter: blur(3px) !important; border-radius: ${radius}px !important; }
   ._3TORb { background-color: hsla(${hue},68%,43%,${alpha}) !important; border-radius: ${radius}px !important; }`;
     }
 
@@ -2541,13 +2792,109 @@ async function checkForUpdatesUI(panel) {
 })();
 
 // Extra CSS: Useless Footers begone, small fixes & improvements.
-
+// DM BOX STYLES ARE HERE TOO, TEMPORARY HARD_CODED AND NOT PANEL HUE RELATED.
 
 GM_addStyle(`
+
+.uwn5j  { 
+    background-color: #171414 !important;
+    border: none !important;
+}
+._375XK ._2XaOw {
+    scrollbar-width: thin !important;
+    scrollbar-color: ##C3B398 transparent !important;
+    background-color: #171414 !important;
+    border: none !important;
+}
+
+._375XK .F3PyX {
+    background-color: #171414 !important;
+    border: none !important;
+}
+._375XK ._2drTe textarea {
+    background-color: #171414 !important;
+    border: none !important;
+    color: #ffff !important;
+}
+.obf-wrap textarea:focus,
+.obf-wrap textarea:active {
+    border: 0;
+    outline: 0;
+    box-shadow: none;
+}
+
+.obf-wrap {
+    background: transparent !important;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+}
+
+.obf-wrap textarea {
+    flex: 1;
+    background: transparent;
+    border: 0;
+    outline: 0;
+    box-shadow: none;
+    appearance: none;
+    resize: none;
+    padding: 12px;
+    color: #fff;
+}
+
+.obf-wrap textarea:focus {
+    outline: 0;
+    box-shadow: none;
+}
+
+
+MuiStack-root _2drTe css-u4p24i {
+    background-color: #171414 !important;
+    border: none !important;
+    color: #ffff !important;
+}
+
+
+._375XK ._2XaOw ._1j2Cd._1Xzzq p { /* our chat-bubble */
+    box-shadow: 0 0 4px #B59C6B !important;
+    border-radius: 13px !important;
+    background-color: #2E2D2C !important;
+    color: #fff !important;
+}
+
+._375XK ._2XaOw ._1j2Cd p { /* incoming chat-bubble */
+background-color: #302820 !important;
+box-shadow: 0 0 2px #D9C6A3 !important;
+color: #ffff !important;
+border-radius: 7px !important;
+}
+
+._375XK .F3PyX ._2XzvN, .uwn5j ._3DYYr ._28mON header { color: #DEAB54 !important; }
+.uwn5j ._3DYYr ._1j2Cd { display: none !important; }
+
+
+
+
 ._1RMYS { display: none !important; }
 ._3-qgq ._2uIZL { background-color: hsla(0, 5.9%, 13.3%, 0.51); }
 .css-e5yc1l { background-color: transparent !important; text-shadow: 0 0 4px #fff !important; }
 .css-1995t1d { background-color: transparent !important; text-shadow: 0 0 4px #fff !important; }
+.css-16dac4n { display: none !important; }
+.css-atlh4n { background-color: transparent !important; text-shadow: 0 0 4px #fff !important; }
+.css-jm72ng {	background: linear-gradient(90deg,#ff1d1d,#ff1eec,#fc22ea,#0f93ff,#00ffb3,#00ff00,#fffb21,#e69706,#ff1111);
+	background-size: 400% 100%;
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent !important;
+	animation: avflow 9s ease-in-out infinite;
+	font-weight: 700;
+	cursor: pointer;
+}
+@keyframes avflow {
+	0% { background-position: 0% 50% }
+	50% { background-position: 100% 50% }
+	100% { background-position: 0% 50% }
+} 
 `);
 
 
