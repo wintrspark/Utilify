@@ -5,26 +5,6 @@
 // @description  Slowly rewriting this addon because I want to feel useful.
 // @author       Simon
 // @match        *://www.kogama.com/*
-// @icon         https://i.imgur.com/tqAXRve.gif
-// @grant        GM_info
-// @grant        GM_addStyle
-// @grant        GM_getValue
-// @grant        GM_setValue
-// @grant        GM_xmlhttpRequest
-// @grant        GM_setClipboard
-// @connect      fonts.googleapis.com
-// @connect      kogama.com
-// @connect      kogama.com.br
-// @run-at       document-start
-// ==/UserScript==
-
-// ==UserScript==
-// @name         Unstable Utilify V3
-// @namespace    wee woo wee woo
-// @version      1.1.1
-// @description  Slowly rewriting this addon because I want to feel useful.
-// @author       Simon
-// @match        *://www.kogama.com/*
 // @icon         https://avatars.githubusercontent.com/u/143356794?v=4
 // @grant        GM_info
 // @grant        GM_addStyle
