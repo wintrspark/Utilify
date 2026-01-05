@@ -46,37 +46,6 @@ GM_addStyle(`
     border: none !important;
     color: #ffff !important;
 }
-.obf-wrap textarea:focus,
-.obf-wrap textarea:active {
-    border: 0;
-    outline: 0;
-    box-shadow: none;
-}
-
-.obf-wrap {
-    background: transparent !important;
-    border-radius: 10px;
-    overflow: hidden;
-    display: flex;
-}
-
-.obf-wrap textarea {
-    flex: 1;
-    background: transparent;
-    border: 0;
-    outline: 0;
-    box-shadow: none;
-    appearance: none;
-    resize: none;
-    padding: 12px;
-    color: #fff;
-}
-
-.obf-wrap textarea:focus {
-    outline: 0;
-    box-shadow: none;
-}
-
 
 MuiStack-root _2drTe css-u4p24i {
     background-color: #171414 !important;
@@ -232,113 +201,60 @@ border-radius: 7px !important;
   'use strict';
 
   const WHITELISTED_DOMAINS = ['youtube.com', 'youtu.be'];
-  const URL_REGEX = /(?:https?:\/\/)?(?:www\.)?([\w.-]+(?:\.[\w.-]+)+)(?:\/[\w-./?%=&]*)?/gi;
 
-  const STYLE = `
-.obf-wrap{position:relative;display:inline-block;width:100%}
-.obf-btn{
-  position:absolute;
-  right:6px;
-  top:50%;
-  transform:translateY(-50%);
-  width:22px;
-  height:22px;
-  border-radius:6px;
-  background:#111;
-  border:1px solid #2a2a2a;
-  color:#bdbdbd;
-  font-size:12px;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  transition:background .15s,color .15s,opacity .15s;
-}
-.obf-btn:hover{background:#1a1a1a;color:#fff}
-.obf-btn[data-off="1"]{opacity:.4}
-`;
-
-  const styleEl = document.createElement('style');
-  styleEl.textContent = STYLE;
-  document.head.appendChild(styleEl);
+  const URL_REGEX =
+    /\bhttps?:\/\/(?:www\.)?([\w.-]+\.[a-z]{2,})(?:\/[^\s]*)?/gi;
 
   const isTextInput = el =>
     el &&
     (el.tagName === 'TEXTAREA' ||
       (el.tagName === 'INPUT' &&
-        ['text','search','url','email','tel','password'].includes(el.type)));
+        ['text', 'search', 'url', 'email', 'tel', 'password'].includes(el.type)));
 
-  const isWhitelisted = d =>
-    WHITELISTED_DOMAINS.some(w => d === w || d.endsWith('.' + w));
+  const isWhitelisted = domain =>
+    WHITELISTED_DOMAINS.some(w => domain === w || domain.endsWith('.' + w));
 
-  const obfuscate = (text, enabled) =>
-    enabled
-      ? text.replace(URL_REGEX, (m, d) =>
-          isWhitelisted(d) ? m : m.replace(/\./g, '%2E'))
-      : text;
+  const obfuscateURLs = text =>
+    text.replace(URL_REGEX, (match, domain) =>
+      isWhitelisted(domain)
+        ? match
+        : match.replace(/\./g, '%2E')
+    );
 
-  const enhanceInput = input => {
-    if (!isTextInput(input) || input.dataset.obfInit) return;
-    input.dataset.obfInit = '1';
-    input._disableObfuscation = false;
+  const processValue = el => {
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
 
-    const wrap = document.createElement('div');
-    wrap.className = 'obf-wrap';
-    input.parentNode.insertBefore(wrap, input);
-    wrap.appendChild(input);
+    const next = obfuscateURLs(el.value);
+    if (next === el.value) return;
 
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'obf-btn';
-    btn.textContent = '⚡';
-    wrap.appendChild(btn);
-
-    const pr = parseInt(getComputedStyle(input).paddingRight || 0, 10);
-    input.style.paddingRight = pr + 26 + 'px';
-
-    btn.onclick = () => {
-      input._disableObfuscation = !input._disableObfuscation;
-      btn.dataset.off = input._disableObfuscation ? '1' : '0';
-    };
-
-    input.value = obfuscate(input.value, true);
+    el.value = next;
+    el.setSelectionRange(start, end);
   };
 
-  document.addEventListener('input', e => {
-    const t = e.target;
-    if (!isTextInput(t) || t._disableObfuscation) return;
-    if (e.inputType !== 'insertText' || !e.data) return;
-    const s = t.selectionStart;
-    const v = obfuscate(t.value, true);
-    if (v !== t.value) {
-      t.value = v;
-      t.setSelectionRange(s, s);
-    }
-  }, true);
+  document.addEventListener(
+    'input',
+    e => {
+      if (!isTextInput(e.target)) return;
+      if (e.inputType && !e.inputType.startsWith('insert')) return;
+      processValue(e.target);
+    },
+    true
+  );
 
-  document.addEventListener('paste', e => {
-    if (!isTextInput(e.target)) return;
-    e.preventDefault();
-    const t = (e.clipboardData || window.clipboardData).getData('text');
-    document.execCommand('insertText', false, t);
-  }, true);
+  document.addEventListener(
+    'paste',
+    e => {
+      if (!isTextInput(e.target)) return;
 
-  const scan = root =>
-    root.querySelectorAll?.('input,textarea').forEach(enhanceInput);
-
-  scan(document);
-
-  new MutationObserver(m =>
-    m.forEach(r =>
-      r.addedNodes.forEach(n => {
-        if (n instanceof HTMLElement) {
-          enhanceInput(n);
-          scan(n);
-        }
-      })
-    )
-  ).observe(document.body, { childList: true, subtree: true });
+      e.preventDefault();
+      const text = (e.clipboardData || window.clipboardData).getData('text');
+      document.execCommand('insertText', false, obfuscateURLs(text));
+    },
+    true
+  );
 })();
+
 
 
 (async function() {
@@ -3078,12 +2994,7 @@ function modifyLogo() {
             transition: all 0.2s ease;
           }
           
-          input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: rgba(255, 192, 203, 0.5);
-            box-shadow: 0 0 0 3px rgba(255, 192, 203, 0.1);
-            background: rgba(0, 0, 0, 0.5);
-          }
+
   
           input[type="range"] {
             width: 100%;
