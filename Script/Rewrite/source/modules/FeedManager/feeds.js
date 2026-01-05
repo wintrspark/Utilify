@@ -469,7 +469,7 @@
       const bioHeader = document.querySelector('h2');
       if (!bioHeader) return;
       
-      const copyBtn = bioHeader.querySelector('.aero-copy-btn');
+      const copyBtn = bioHeader.querySelector('.ethereal-copy-btn');
       if (!copyBtn) return;
       
       clearInterval(checkBio);
