@@ -221,7 +221,7 @@ border-radius: 7px !important;
   });
 })();
 
-(() => {
+(() => { // dot obfuscation (smarter, automatic)
   'use strict';
 
   const WHITELISTED_DOMAINS = ['youtube.com', 'youtu.be'];
@@ -4381,46 +4381,71 @@ disableStreakKeeper() {
       }
     };
 
-    function createSettingsButton() {
-      const btn = document.createElement('button');
-      btn.id = 'utilify_settings_btn';
-      btn.setAttribute('aria-label', 'Open Utilify Settings');
-      btn.innerHTML = '✦';
-      btn.style.cssText = `
-        position: fixed;
-        bottom: 24px;
-        right: 24px;
-        width: 54px;
-        height: 54px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, rgba(255, 192, 203, 0.3), rgba(200, 190, 220, 0.3));
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 192, 203, 0.4);
-        color: #ffc0cb;
-        font-size: 24px;
-        cursor: pointer;
-        box-shadow: 0 4px 20px rgba(255, 192, 203, 0.3);
-        z-index: 119999;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      `;
-      
-      btn.addEventListener('mouseenter', () => {
-        btn.style.transform = 'scale(1.1) rotate(90deg)';
-        btn.style.boxShadow = '0 6px 30px rgba(255, 192, 203, 0.5)';
-      });
-      
-      btn.addEventListener('mouseleave', () => {
-        btn.style.transform = 'scale(1) rotate(0deg)';
-        btn.style.boxShadow = '0 4px 20px rgba(255, 192, 203, 0.3)';
-      });
-      
-      btn.addEventListener('click', () => UI.show());
-      document.body.appendChild(btn);
-    }
-  
+function createSettingsButton() {
+  if (document.getElementById('utilify_settings_btn')) return;
+
+  const tryInject = () => {
+    const targetList = document.querySelector('ol._3hI0M');
+    if (!targetList) return false;
+
+    const li = document.createElement('li');
+    li.className = '_3WhKY';
+
+    const btn = document.createElement('button');
+    btn.id = 'utilify_settings_btn';
+    btn.setAttribute('aria-label', 'Open Utilify Settings');
+    btn.innerHTML = '✦';
+
+    btn.style.cssText = `
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(255, 192, 203, 0.3), rgba(200, 190, 220, 0.3));
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 192, 203, 0.4);
+    color: #ffc0cb;
+    font-size: 11px;
+    line-height: 1;
+    margin-right: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(255, 192, 203, 0.3);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform-origin: 50% 50%;
+    `;
+
+    btn.addEventListener('mouseenter', () => {
+      btn.style.transform = 'scale(1.1) rotate(90deg)';
+      btn.style.boxShadow = '0 6px 30px rgba(255, 192, 203, 0.5)';
+    });
+
+    btn.addEventListener('mouseleave', () => {
+      btn.style.transform = 'scale(1) rotate(0deg)';
+      btn.style.boxShadow = '0 4px 20px rgba(255, 192, 203, 0.3)';
+    });
+
+    btn.addEventListener('click', () => UI.show());
+
+    li.appendChild(btn);
+    targetList.insertBefore(li, targetList.firstElementChild);
+
+    return true;
+  };
+
+  if (tryInject()) return;
+
+  const observer = new MutationObserver(() => {
+    if (tryInject()) observer.disconnect();
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+}
+
     function init() {
       Styles.initBase();
       UI.create();
@@ -5547,147 +5572,137 @@ av {
 })();
 
 
+// Utilify Contributor Badge
 (() => {
   "use strict";
 
-  const IDS = [
-    "24051519",
-    "17037147",
-    "16947158",
-    "36355",
-    "669433161"
-  ];
-
+  const CONTRIBUTORS = ["24051519", "17037147", "16947158", "36355", "669433161", "9610391", "669082809", "17506905","50117938", "669722541", "16947158"];
   const match = location.pathname.match(/^\/profile\/(\d+)\/?$/);
-  const uid = match ? match[1] : null;
-  if (!uid || !IDS.includes(uid)) return;
-
-  const badgeText = "Utilify Friend";
-  const creditHTML = `
-    This profile is associated with Utilify as a whole.<br>
-    Their presence made a difference.<br>
-    <a href="https://github.com/wintrspark/Utilify/" target="_blank" rel="noopener noreferrer">GitHub</a>
-  `;
-
+  if (!match || !CONTRIBUTORS.includes(match[1])) return;
   const style = document.createElement("style");
   style.textContent = `
-@keyframes sparkle {
-  0%,100% { opacity: .35; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.25); }
-}
+    @keyframes sparkle-rotate {
+      0%, 100% { opacity: 0.4; transform: scale(1) rotate(0deg); }
+      50% { opacity: 1; transform: scale(1.2) rotate(180deg); }
+    }
 
-@keyframes glow {
-  0% { box-shadow: 0 0 18px rgba(255,192,203,.25); }
-  50% { box-shadow: 0 0 32px rgba(200,190,220,.45); }
-  100% { box-shadow: 0 0 18px rgba(255,192,203,.25); }
-}
+    @keyframes glow-pulse {
+      0%, 100% { box-shadow: 0 4px 20px rgba(255, 192, 203, 0.3); }
+      50% { box-shadow: 0 6px 30px rgba(255, 192, 203, 0.5); }
+    }
 
-@keyframes shimmer {
-  0% { background-position: -120% 0; }
-  100% { background-position: 120% 0; }
-}
+    @keyframes shimmer-sweep {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
 
-.badge-panel {
-  position: fixed;
-  left: 50%;
-  bottom: 28px;
-  transform: translateX(-50%);
-  z-index: 99999;
-  min-width: 240px;
-  max-width: 72vw;
-  padding: 14px 18px 16px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, rgba(26,27,30,.95), rgba(22,23,26,.98));
-  border: 1px solid rgba(255,192,203,.25);
-  color: #e8e8ee;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, system-ui, sans-serif;
-  font-size: 13px;
-  line-height: 1.35;
-  text-align: center;
-  animation: glow 4s ease-in-out infinite;
-  backdrop-filter: blur(14px);
-}
+    @keyframes float-in {
+      from { opacity: 0; transform: translate(-50%, 20px); }
+      to { opacity: 1; transform: translate(-50%, 0); }
+    }
 
-.badge-panel::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255,192,203,.25) 50%,
-    transparent 100%
-  );
-  opacity: .35;
-  animation: shimmer 6s ease-in-out infinite;
-  pointer-events: none;
-}
+    .utilify-badge {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%);
+      z-index: 99999;
+      max-height: 150px;
+      min-width: 140px;
+      max-width: 280px;
+      padding: 16px 24px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, 
+        rgba(255, 192, 203, 0.95) 0%, 
+        rgba(200, 190, 220, 0.95) 50%, 
+        rgba(255, 192, 203, 0.95) 100%);
+      background-size: 200% 100%;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: #1a1b1e;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      text-align: center;
+      animation: float-in 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+                 shimmer-sweep 4s linear infinite,
+                 glow-pulse 3s ease-in-out infinite;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 20px rgba(255, 192, 203, 0.3),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    }
 
-.badge-star {
-  position: absolute;
-  font-size: 11px;
-  color: rgba(255,192,203,.6);
-  animation: sparkle 3s ease-in-out infinite;
-  pointer-events: none;
-}
+    .utilify-badge-icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+      animation: sparkle-rotate 3s ease-in-out infinite;
+    }
 
-.badge-star.s1 { left: 10px; top: 10px; animation-delay: .2s; }
-.badge-star.s2 { right: 12px; top: 18px; font-size: 13px; animation-delay: .9s; color: rgba(200,190,220,.7); }
-.badge-star.s3 { left: 18px; bottom: 14px; animation-delay: 1.6s; }
-.badge-star.s4 { right: 16px; bottom: 12px; font-size: 12px; animation-delay: 1.1s; color: rgba(200,190,220,.7); }
+    .utilify-badge-title {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
+    }
 
-.badge-title {
-  display: inline-block;
-  margin-bottom: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 1.6px;
-  text-transform: uppercase;
-  background: linear-gradient(135deg, #ffc0cb 0%, #c8bed8 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
+    .utilify-badge-text {
+      font-size: 12px;
+      line-height: 1.6;
+      color: rgba(26, 27, 30, 0.85);
+      margin-bottom: 8px;
+    }
 
-.badge-credit {
-  font-size: 12px;
-  color: rgba(232,232,238,.85);
-}
+    .utilify-badge-link {
+      display: inline-block;
+      margin-top: 4px;
+      padding: 6px 14px;
+      background: rgba(26, 27, 30, 0.15);
+      border-radius: 8px;
+      color: #1a1b1e;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
 
-.badge-credit a {
-  color: #ffc0cb;
-  text-decoration: none;
-  font-weight: 600;
-}
+    .utilify-badge-link:hover {
+      background: rgba(26, 27, 30, 0.25);
+      transform: translateY(-2px);
+    }
 
-.badge-credit a:hover {
-  text-decoration: underline;
-}
-`;
+    .badge-sparkle {
+      position: absolute;
+      font-size: 12px;
+      animation: sparkle-rotate 3s ease-in-out infinite;
+      pointer-events: none;
+      opacity: 0.6;
+    }
+
+    .badge-sparkle:nth-child(1) { left: 12px; top: 12px; animation-delay: 0.2s; color: rgba(26, 27, 30, 0.4); }
+    .badge-sparkle:nth-child(2) { right: 12px; top: 12px; animation-delay: 0.8s; color: rgba(26, 27, 30, 0.3); }
+    .badge-sparkle:nth-child(3) { left: 12px; bottom: 12px; animation-delay: 1.4s; color: rgba(26, 27, 30, 0.35); }
+    .badge-sparkle:nth-child(4) { right: 12px; bottom: 12px; animation-delay: 0.5s; color: rgba(26, 27, 30, 0.4); }
+  `;
   document.head.appendChild(style);
 
-  const panel = document.createElement("div");
-  panel.className = "badge-panel";
+  // Create badge
+  const badge = document.createElement("div");
+  badge.className = "utilify-badge";
+  badge.innerHTML = `
+    <div class="badge-sparkle">✦</div>
+    <div class="badge-sparkle">✧</div>
+    <div class="badge-sparkle">✦</div>
+    <div class="badge-sparkle">✧</div>
+    <div class="utilify-badge-icon">✦</div>
+    <div class="utilify-badge-title">Utilify Contributor</div>
+    <div class="utilify-badge-text">
+      This person helped shape Utilify and made it better for everyone.
+    </div>
+    <a href="https://github.com/gxthickitty/utilify" class="utilify-badge-link" target="_blank" rel="noopener">
+      View on GitHub →
+    </a>
+  `;
 
-  ["s1","s2","s3","s4"].forEach((c,i) => {
-    const s = document.createElement("div");
-    s.className = `badge-star ${c}`;
-    s.textContent = i % 2 ? "✧" : "✦";
-    panel.appendChild(s);
-  });
-
-  const title = document.createElement("div");
-  title.className = "badge-title";
-  title.textContent = badgeText;
-
-  const credit = document.createElement("div");
-  credit.className = "badge-credit";
-  credit.innerHTML = creditHTML;
-
-  panel.appendChild(title);
-  panel.appendChild(credit);
-  document.body.appendChild(panel);
+  document.body.appendChild(badge);
 })();
 
 
