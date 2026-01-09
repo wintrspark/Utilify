@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UtilifyV2
 // @namespace    wee woo wee woo
-// @version      2.3.0
+// @version      2.3.1
 // @description  A rewrite of previous niche adaptation with goal to enhance visuals & experience
 // @author       Simon
 // @match        *://www.kogama.com/*
@@ -222,8 +222,7 @@ border-radius: 7px !important;
 
 (() => { // dot obfuscation (smarter, automatic)
   'use strict';
-
-  const WHITELISTED_DOMAINS = ['youtube.com', 'youtu.be'];
+  const WHITELISTED_DOMAINS = ['youtube.com', 'youtu.be',"fonts.googleapis.com"];
 
   const URL_REGEX =
     /\bhttps?:\/\/(?:www\.)?([\w.-]+\.[a-z]{2,})(?:\/[^\s]*)?/gi;
@@ -1572,6 +1571,7 @@ border-radius: 7px !important;
 
 (() => {
     'use strict';
+
     const style = document.createElement('style');
     style.textContent = `
         ._2mwlM > div:first-child > button,
@@ -1582,35 +1582,41 @@ border-radius: 7px !important;
     `;
     document.head.appendChild(style);
 
-function modifyLogo() {
+    function modifyLogo() {
         const logoContainer = document.querySelector('._2Jlgl');
         if (!logoContainer) return false;
+
         const logoLink = logoContainer.querySelector('a');
-        if (logoLink) {
-            logoLink.title = "You're using UtilifyV2 by Simon! Thank you!";
-            logoLink.href = "https://github.com/wintrspark";
-            const logoImg = logoLink.querySelector('img');
-            if (logoImg) {
-                logoImg.classList.add('utilify-logo-mod');
-                logoImg.removeAttribute('srcset');
-                logoImg.src = "https://avatars.githubusercontent.com/u/143356794?v=4";
-                logoImg.alt = "You're using UtilifyV2 by Simon! Thank you!";
-            }
-            return true;
-        }
-        return false;
+        if (!logoLink) return false;
+
+        logoLink.title = "You're using UtilifyV2 by Simon! Thank you!";
+        logoLink.href = "https://github.com/gxthickitty";
+
+        const logoImg = logoLink.querySelector('img');
+        if (!logoImg) return false;
+
+        logoImg.removeAttribute('srcset');
+        logoImg.src = "https://i.imgur.com/me1hlBB.gif";
+        logoImg.alt = "You're using UtilifyV2 by Simon! Thank you!";
+
+        logoImg.style.setProperty('object-fit', 'cover', 'important');
+        logoImg.style.setProperty('object-position', 'center', 'important');
+
+        return true;
     }
+
     if (modifyLogo()) return;
+
     const observer = new MutationObserver(() => {
-        if (modifyLogo()) {
-            observer.disconnect();
-        }
+        if (modifyLogo()) observer.disconnect();
     });
+
     observer.observe(document.body, {
         childList: true,
         subtree: true
     });
 })();
+
 
 
 
@@ -4251,30 +4257,40 @@ disableStreakKeeper() {
           Styles.applyCustomCSS(cfg.customCSS);
         });
   
-        this.panel.querySelector('#main-font').addEventListener('change', (e) => {
-          const cfg = Storage.getConfig();
-          cfg.fontFamily = e.target.value;
-          Storage.saveConfig(cfg);
-          
-          if (e.target.value === 'roboto') {
-            Styles.applyFont('Roboto', 'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
-          } else if (e.target.value === 'comfortaa') {
-            Styles.applyFont('Comfortaa', 'https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;700&display=swap');
-          } else if (e.target.value === 'online' && cfg.onlineFont) {
-            Styles.loadOnlineFont(cfg.onlineFont);
-          } else {
-            Styles.applyFont(null, null);
+       // Fonts
+      this.panel.querySelector('#main-font').addEventListener('change', (e) => {
+        const cfg = Storage.getConfig();
+        cfg.fontFamily = e.target.value;
+        Storage.saveConfig(cfg);
+        
+        if (e.target.value === 'roboto') {
+          Styles.applyFont('Roboto', 'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+        } else if (e.target.value === 'comfortaa') {
+          Styles.applyFont('Comfortaa', 'https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;700&display=swap');
+        } else if (e.target.value === 'online' && cfg.onlineFont) {
+          Styles.loadOnlineFont(cfg.onlineFont);
+        } else {
+          Styles.applyFont(null, null);
+        }
+      });
+
+      this.panel.querySelector('#online-font-url').addEventListener('change', (e) => {
+        const url = e.target.value.trim();
+        const cfg = Storage.getConfig();
+        cfg.onlineFont = url;
+        Storage.saveConfig(cfg);
+        
+        if (url) {
+          // Apply font immediately
+          Styles.loadOnlineFont(url);
+          // Also update the font selector to "online" if not already
+          if (cfg.fontFamily !== 'online') {
+            cfg.fontFamily = 'online';
+            this.panel.querySelector('#main-font').value = 'online';
+            Storage.saveConfig(cfg);
           }
-        });
-  
-        this.panel.querySelector('#online-font-url').addEventListener('change', (e) => {
-          const cfg = Storage.getConfig();
-          cfg.onlineFont = e.target.value;
-          Storage.saveConfig(cfg);
-          if (e.target.value && cfg.fontFamily === 'online') {
-            Styles.loadOnlineFont(e.target.value);
-          }
-        });
+        }
+      });
   
         // Risky features
         this.panel.querySelector('#appear-offline').addEventListener('change', (e) => {
